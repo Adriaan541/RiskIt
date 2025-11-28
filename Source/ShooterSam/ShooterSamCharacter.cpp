@@ -67,7 +67,8 @@ void AShooterSamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AShooterSamCharacter::Look);
 
-		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AShooterSamCharacter::Shoot);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AShooterSamCharacter::Shoot);
+		
 	}
 	else
 	{
@@ -160,6 +161,17 @@ void AShooterSamCharacter::DoJumpEnd()
 void AShooterSamCharacter::Shoot()
 {
 	Gun->PullTrigger();
+}
+
+/**
+ * TODO: Add automatic shooting
+ */
+void AShooterSamCharacter::PlayerStartShooting()
+{
+}
+
+void AShooterSamCharacter::PlayerStopShooting()
+{
 }
 
 void AShooterSamCharacter::UpdateHud()

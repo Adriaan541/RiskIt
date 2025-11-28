@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ItemDrop.h"
 #include "UI/HUDWidget.h"
 #include "GameFramework/PlayerController.h"
 #include "ShooterSamPlayerController.generated.h"
@@ -54,4 +55,10 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TArray<UTexture2D*> HUDItemImages;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AItemDrop> ItemDropClass;
+	
+	UPROPERTY(EditAnywhere)
+	UMaterial* ItemDropMaterial;
 };

@@ -5,8 +5,11 @@
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 #include "InputMappingContext.h"
+#include "ItemDrop.h"
 #include "Blueprint/UserWidget.h"
 #include "ShooterSam.h"
+#include "Kismet/GameplayStatics.h"
+#include "Tasks/GameplayTask_SpawnActor.h"
 #include "Widgets/Input/SVirtualJoystick.h"
 
 void AShooterSamPlayerController::BeginPlay()
@@ -43,6 +46,20 @@ void AShooterSamPlayerController::BeginPlay()
 		ItemValues.Add({FString::Printf(TEXT("Ammo2")), 200});
 		
 		HUDWidget->UpdateItems(ItemValues);
+		ItemValues[0] = {FString::Printf(TEXT("Ammo")), 2};
+		HUDWidget->UpdateItems(ItemValues);
+	}
+
+	FTransform SpawnTransform;
+	AItemDrop* ItemDrop = GetWorld()->SpawnActorDeferred<AItemDrop>(ItemDropClass, SpawnTransform);
+
+	// AItemDrop* ItemDrop = GetWorld()->SpawnActor<AItemDrop>(ItemDropClass);
+	if (ItemDrop)
+	{
+		ItemDrop->DropMaterial = ItemDropMaterial;
+		UE_LOG(LogShooterSam, Display, TEXT("ItemDrop created"));
+
+		UGameplayStatics::FinishSpawningActor(ItemDrop, SpawnTransform);
 	}
 }
 

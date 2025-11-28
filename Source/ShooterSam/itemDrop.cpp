@@ -32,12 +32,21 @@ void AItemDrop::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FRotator Rotation = FRotator(100.0f * DeltaTime, 0, 0);
+	FRotator Rotation = FRotator(0, 100.0f * DeltaTime, 0);
 	AddActorLocalRotation(Rotation);
 }
 
 void AItemDrop::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	UE_LOG(LogTemp, Display, TEXT("Touched"));
+	if (OtherActor->ActorHasTag("Player"))
+	{
+		UE_LOG(LogTemp, Display, TEXT("Player touches"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("Someone else"));
+	}
 }
 

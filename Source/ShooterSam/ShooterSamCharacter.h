@@ -92,6 +92,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void Shoot();
+
+	UFUNCTION(BlueprintCallable, Category="Input")
+	void PlayerStartShooting();
+
+	UFUNCTION(BlueprintCallable, Category="Input")
+	void PlayerStopShooting();
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AGun> GunClass;
