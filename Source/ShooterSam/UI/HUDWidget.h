@@ -17,10 +17,19 @@ class UTextBlock;
  */
 
 USTRUCT(BlueprintType)
+struct FItemWidgetsWithNames
+{
+	GENERATED_BODY()
+
+	FName ItemName;
+	UUserWidget* ItemWidget;
+};
+
+USTRUCT(BlueprintType)
 struct FItemValues
 {
 	GENERATED_BODY()
-	
+
 	FString ItemName;
 	int32 Amount;
 };
@@ -39,14 +48,18 @@ public:
 
 	UPROPERTY(EditAnywhere, meta = (BindWidgetOptional))
 	UHorizontalBox* ItemBar;
-	
+
 	TSubclassOf<UItemBox> ItemWidgetClass;
-	
+
 	TArray<UTexture2D*> ItemImages;
 
-	TArray<UUserWidget*> ItemWidgets;
+	TArray<FItemWidgetsWithNames> ItemWidgets;
 
 	void SetHealthBar(float CurrentHealth, float MaxHealth);
 
 	void UpdateItems(TArray<FItemValues> Items);
+
+	FName WidgetNameFromItemName(FString ItemName);
+
+	void CreateItemWidget(FItemValues Item);
 };

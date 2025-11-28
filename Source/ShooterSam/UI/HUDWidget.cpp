@@ -26,7 +26,7 @@ void UHUDWidget::SetHealthBar(float CurrentHealth, float MaxHealth)
 		HealthTextString = FText::FromString(FString::Printf(TEXT("0 / %.0f"), MaxHealth));
 		HealthDecimal = 0.0f;
 	}
-	
+
 	HealthBar->SetPercent(HealthDecimal);
 	HealthText->SetText(HealthTextString);
 }
@@ -35,43 +35,39 @@ void UHUDWidget::UpdateItems(TArray<FItemValues> Items)
 {
 	for (FItemValues Item : Items)
 	{
-		UUserWidget* ItemBoxWidget = CreateWidget(this, *ItemWidgetClass, FName(*Item.ItemName));
-		if (ItemBoxWidget && ItemBar)
+		FItemWidgetsWithNames* ItemWidgetWithName = ItemWidgets.FindByPredicate([&](const FItemWidgetsWithNames& Entry)
 		{
-			ItemWidgets.Add(ItemBoxWidget);
-			ItemBar->AddChild(ItemBoxWidget);
-			UItemBox* ItemBox = Cast<UItemBox>(ItemBoxWidget);
-			ItemBox->Init(ItemImages[0], Item.Amount);
+			return Entry.ItemName == Item.ItemName;
+		});
+		if (ItemWidgetWithName)
+		{
+			UItemBox* ItemBox = Cast<UItemBox>(ItemWidgetWithName->ItemWidget);
+			if (ItemBox)
+			{
+				ItemBox->SetAmount(Item.Amount);
+				continue;
+			}
 		}
+		CreateItemWidget(Item);
 	}
 }
 
+FName UHUDWidget::WidgetNameFromItemName(FString ItemName)
+{
+	return FName(FString::Printf(TEXT("%sWidget"), *ItemName));
+}
 
-// void UHUDWidget::UpdateItems(TArray<FItemValues> Items)
-// {
-// 	TArray<TPair<FString, UUserWidget*>> ItemWidgetsWithNames;
-// 	for (UUserWidget* ItemWidget : ItemWidgets)
-// 	{
-// 		ItemWidgetsWithNames.Add({ItemWidget->GetName(), ItemWidget});
-// 	}
-// 	
-// 	for (FItemValues Item : Items)
-// 	{
-// 		FString WidgetName = FString::Printf(TEXT("%sBox"), *Item.ItemName);
-// 		if (ItemWidgetsWithNames[WidgetName])
-// 		{
-// 			
-// 		}
-// 		
-// 		UItemBox* ItemBox = Cast<UItemBox>(CreateWidgetInstance(*ItemBar, UItemBox::StaticClass(), FName(*Item)));
-// 		
-// 		
-// 		
-// 		ItemBox->SetItemAndAmount(ItemImages.FindItemByClass(FName(TEXT("%s Icon"), )));
-// 		
-// 		ItemWidgets.Add(CreateWidgetInstance(*ItemBar, UItemBox::StaticClass(), FName(*Item)));
-// 	}
-// }
+void UHUDWidget::CreateItemWidget(FItemValues Item)
+{
+	UUserWidget* ItemBoxWidget = CreateWidget(this, *ItemWidgetClass, WidgetNameFromItemName(*Item.ItemName));
+	if (ItemBoxWidget && ItemBar)
+	{
+		ItemWidgets.Add({WidgetNameFromItemName(*Item.ItemName), ItemBoxWidget});
+		ItemBar->AddChild(ItemBoxWidget);
+		UItemBox* ItemBox = Cast<UItemBox>(ItemBoxWidget);
+		ItemBox->Init(ItemImages[0], Item.Amount);
+	}
+}
 
 
 /* TODO: Add Item functionality
