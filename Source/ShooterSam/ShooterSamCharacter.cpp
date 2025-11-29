@@ -125,9 +125,12 @@ void AShooterSamCharacter::SpawnItemDrop()
 	FTransform SpawnTransform(FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z - 90.0f));
 	AItemDrop* ItemDrop = GetWorld()->SpawnActorDeferred<AItemDrop>(ItemDropClass, SpawnTransform);
 
-	if (ItemDrop)
+	if (ItemDrop && ItemManager)
 	{
-		ItemDrop->DropMaterial = ItemDropMaterial;
+		FItem RandomItem = ItemManager->GetRandomItem();
+
+		ItemDrop->ItemName = RandomItem.ItemName;
+		ItemDrop->DropMaterial = RandomItem.ItemMaterial;
 
 		UGameplayStatics::FinishSpawningActor(ItemDrop, SpawnTransform);
 	}
@@ -200,20 +203,11 @@ void AShooterSamCharacter::UpdateHudHealth()
 	}
 }
 
-void AShooterSamCharacter::UpdateHUDItems()
-{
-	if (PlayerController && ItemManager)
-	{
-		PlayerController->HUDWidget->UpdateItems(ItemManager->GetItems());
-	}
-}
-
 void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
                                          class AController* InstigatedBy, AActor* DamageCauser)
 {
 	if (DamagedActor->GetActorNameOrLabel() == InstigatedBy->GetActorNameOrLabel() | !IsAlive) return;
 
-	UE_LOG(LogTemp, Display, TEXT("OnDamageTaken"));
 	Health -= Damage;
 	
 	if (Health <= 0)

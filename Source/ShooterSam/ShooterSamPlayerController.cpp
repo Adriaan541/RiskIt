@@ -8,6 +8,7 @@
 #include "ItemDrop.h"
 #include "Blueprint/UserWidget.h"
 #include "ShooterSam.h"
+#include "ShooterSamCharacter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Widgets/Input/SVirtualJoystick.h"
 
@@ -40,6 +41,12 @@ void AShooterSamPlayerController::BeginPlay()
 		HUDWidget->ItemWidgetClass = ItemBoxWidgetClass;
 
 		HUDWidget->ItemImages = HUDItemImages;
+
+		AShooterSamCharacter* ShooterSamCharacter = Cast<AShooterSamCharacter>(GetPawn());
+		if (ShooterSamCharacter && ShooterSamCharacter->ItemManager)
+		{
+			ShooterSamCharacter->ItemManager->Init(HUDWidget);
+		}
 	}
 
 	FTransform SpawnTransform;
@@ -47,6 +54,7 @@ void AShooterSamPlayerController::BeginPlay()
 	
 	if (ItemDrop)
 	{
+		ItemDrop->ItemName = TEXT("Ammo");
 		ItemDrop->DropMaterial = ItemDropMaterial;
 
 		UGameplayStatics::FinishSpawningActor(ItemDrop, SpawnTransform);

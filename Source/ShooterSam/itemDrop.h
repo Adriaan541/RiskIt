@@ -24,6 +24,8 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* IconMesh;
 
+	FName ItemName;
+
 	UMaterial* DropMaterial;
 
 protected:

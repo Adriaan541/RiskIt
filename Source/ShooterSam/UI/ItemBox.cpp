@@ -20,5 +20,5 @@ void UItemBox::Init(UTexture2D* ItemIcon, int Amount)
 
 void UItemBox::SetAmount(int Amount)
 {
-	TextBox->SetText(FText::FromString(FString::Printf(TEXT("%d"), Amount)));
+	TextBox->SetText(FText::FromString(FString::Printf(TEXT("%dx"), Amount)));
 }

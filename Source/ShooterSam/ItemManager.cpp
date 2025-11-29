@@ -15,7 +15,6 @@ UItemManager::UItemManager()
 void UItemManager::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void UItemManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -24,41 +23,136 @@ void UItemManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 	
 }
 
-TArray<FItemValues> UItemManager::GetItems()
+void UItemManager::Init(UHUDWidget* HUDWidgetReference)
+{
+	HUDWidget = HUDWidgetReference;
+	for (FItem& Item : Items)
+	{
+		Item.Amount = 0;
+		CreateItemBoxWidget(Item);
+	}
+}
+
+void UItemManager::CreateItemBoxWidget(FItem& Item)
+{
+	if (HUDWidget)
+	{
+		UItemBox* ItemBoxWidget = CreateWidget<UItemBox>(HUDWidget, ItemWidgetClass, WidgetNameFromItemName(Item.ItemName));
+		UE_LOG(LogTemp, Display, TEXT("Creating item widget"));
+		if (ItemBoxWidget)
+		{
+			UE_LOG(LogTemp, Display, TEXT("Item Widget Created"));
+			Item.ItemBox = ItemBoxWidget;
+			ItemBoxWidget->Init(Item.Icon, Item.Amount);
+		}
+	}
+}
+
+void UItemManager::UpdateItemBoxWidget(FItem& Item)
+{
+	if (Item.ItemBox)
+	{
+		Item.ItemBox->SetAmount(Item.Amount);
+	}
+}
+
+void UItemManager::CreateWidgets()
+{
+	for (FItem& Item : Items)
+	{
+		UItemBox* ItemBoxWidget = CreateWidget<UItemBox>(HUDWidget, *ItemWidgetClass, WidgetNameFromItemName(Item.ItemName));
+		UE_LOG(LogTemp, Display, TEXT("Creating item widget"));
+		if (ItemBoxWidget)
+		{
+			UE_LOG(LogTemp, Display, TEXT("Item Widget Created"));
+			Item.ItemBox = ItemBoxWidget;
+			ItemBoxWidget->Init(Item.Icon, Item.Amount);
+		}
+	}
+}
+
+FName UItemManager::WidgetNameFromItemName(FName ItemName)
+{
+	return FName(ItemName.ToString() + TEXT("Widget"));
+}
+
+void UItemManager::UpdateItemBar()
+{
+	if (HUDWidget)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Item Bar Updated"));
+		UE_LOG(LogTemp, Display, TEXT("Items: %i"), GetItems().Num());
+		HUDWidget->UpdateItemBar(GetItems());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("HUDWidget null"));
+	}
+}
+
+TArray<FItem> UItemManager::GetItems()
 {
 	return Items;
 }
 
-void UItemManager::AddItem(FString ItemName)
+FItem UItemManager::GetRandomItem()
 {
-	for (FItemValues& Item : Items)
+	return Items[FMath::RandRange(0, Items.Num() - 1)];
+}
+
+void UItemManager::AddItem(FName ItemName)
+{
+	for (FItem& Item : Items)
 	{
-		if (ItemName == Item.ItemName)
+		if (Item.ItemName == ItemName)
 		{
-			Item.Amount++;
-			return;
+			Item.Amount = Item.Amount + 1;
+			UpdateItemBoxWidget(Item);
+			break;
 		}
 	}
-	Items.Add({ItemName, 1});
+	UpdateItemBar();
 }
 
 void UItemManager::DeductItem(FString ItemName)
 {
-	for (FItemValues& Item : Items)
+	for (FItem& Item : Items)
 	{
-		if (ItemName == Item.ItemName)
+		if (Item.ItemName == ItemName)
 		{
 			Item.Amount--;
-			return;
+			UpdateItemBoxWidget(Item);
+			break;
 		}
 	}
+	UpdateItemBar();
 }
 
 void UItemManager::SetItem(FString ItemName, int32 Amount)
 {
+	for (FItem& Item : Items)
+	{
+		if (Item.ItemName == ItemName)
+		{
+			Item.Amount = Amount;
+			UpdateItemBoxWidget(Item);
+			break;
+		}
+	}
+	UpdateItemBar();
 }
 
 void UItemManager::RemoveItem(FString ItemName)
 {
+	for (FItem& Item : Items)
+	{
+		if (Item.ItemName == ItemName)
+		{
+			Item.Amount = 0;
+			UpdateItemBoxWidget(Item);
+			break;
+		}
+	}
+	UpdateItemBar();
 }
 

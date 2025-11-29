@@ -3,7 +3,7 @@
 
 #include "HUDWidget.h"
 
-#include "Components/ScaleBox.h"
+#include "ItemManager.h"
 #include "Components/TextBlock.h"
 
 void UHUDWidget::SetHealthBar(float CurrentHealth, float MaxHealth)
@@ -31,8 +31,31 @@ void UHUDWidget::SetHealthBar(float CurrentHealth, float MaxHealth)
 	HealthText->SetText(HealthTextString);
 }
 
+void UHUDWidget::UpdateItemBar(TArray<FItem> Items)
+{
+	UE_LOG(LogTemp, Display, TEXT("Item Bar Updated"));
+	for (FItem Item : Items)
+	{
+		if (ItemBar && Item.ItemBox)
+		{
+			UE_LOG(LogTemp, Display, TEXT("Itembox found"));
+			bool ItemIsInItemBar = Item.ItemBox->GetParent() == ItemBar;
+			if (ItemIsInItemBar && Item.Amount <= 0)
+			{
+				ItemBar->RemoveChild(Item.ItemBox);
+			}
+			if (!ItemIsInItemBar && Item.Amount > 0)
+			{
+				UE_LOG(LogTemp, Display, TEXT("Adding child"));
+				ItemBar->AddChild(Item.ItemBox);
+			}
+		}
+	}
+}
+
 void UHUDWidget::UpdateItems(TArray<FItemValues> Items)
 {
+	UE_LOG(LogTemp, Display, TEXT("Item Bar Updated"));
 	for (FItemValues& Item : Items)
 	{
 		FItemWidgetsWithNames* ItemWidgetWithName = ItemWidgets.FindByPredicate([&](const FItemWidgetsWithNames& Entry)
@@ -56,6 +79,8 @@ FName UHUDWidget::WidgetNameFromItemName(FString ItemName)
 {
 	return FName(FString::Printf(TEXT("%sWidget"), *ItemName));
 }
+
+
 
 void UHUDWidget::CreateItemWidget(FItemValues Item)
 {

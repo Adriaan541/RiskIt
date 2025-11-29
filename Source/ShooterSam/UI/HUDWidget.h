@@ -9,6 +9,7 @@
 #include "Components/ProgressBar.h"
 #include "HUDWidget.generated.h"
 
+struct FItem;
 class UImage;
 class UScaleBox;
 class UTextBlock;
@@ -56,6 +57,8 @@ public:
 	TArray<FItemWidgetsWithNames> ItemWidgets;
 
 	void SetHealthBar(float CurrentHealth, float MaxHealth);
+
+	void UpdateItemBar(TArray<FItem> Items);
 
 	void UpdateItems(TArray<FItemValues> Items);
 
