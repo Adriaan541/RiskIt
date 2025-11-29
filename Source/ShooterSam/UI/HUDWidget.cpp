@@ -33,7 +33,7 @@ void UHUDWidget::SetHealthBar(float CurrentHealth, float MaxHealth)
 
 void UHUDWidget::UpdateItems(TArray<FItemValues> Items)
 {
-	for (FItemValues Item : Items)
+	for (FItemValues& Item : Items)
 	{
 		FItemWidgetsWithNames* ItemWidgetWithName = ItemWidgets.FindByPredicate([&](const FItemWidgetsWithNames& Entry)
 		{
@@ -63,9 +63,9 @@ void UHUDWidget::CreateItemWidget(FItemValues Item)
 	if (ItemBoxWidget && ItemBar)
 	{
 		ItemWidgets.Add({WidgetNameFromItemName(*Item.ItemName), ItemBoxWidget});
-		ItemBar->AddChild(ItemBoxWidget);
 		UItemBox* ItemBox = Cast<UItemBox>(ItemBoxWidget);
 		ItemBox->Init(ItemImages[0], Item.Amount);
+		ItemBar->AddChild(ItemBoxWidget);
 	}
 }
 

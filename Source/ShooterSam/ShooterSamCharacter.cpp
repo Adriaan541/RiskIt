@@ -12,6 +12,7 @@
 #include "InputActionValue.h"
 #include "ShooterSam.h"
 #include "ShooterSamPlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
 AShooterSamCharacter::AShooterSamCharacter()
 {
@@ -49,6 +50,8 @@ AShooterSamCharacter::AShooterSamCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	ItemManager = CreateDefaultSubobject<UItemManager>(TEXT("ItemManager"));
 }
 
 void AShooterSamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -67,7 +70,7 @@ void AShooterSamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AShooterSamCharacter::Look);
 
-		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AShooterSamCharacter::Shoot);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AShooterSamCharacter::Shoot);
 		
 	}
 	else
@@ -81,7 +84,7 @@ void AShooterSamCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Health = MaxHealth;
-	UpdateHud();
+	UpdateHudHealth();
 	
 	OnTakeAnyDamage.AddDynamic(this, &AShooterSamCharacter::OnDamageTaken);
 
@@ -95,6 +98,8 @@ void AShooterSamCharacter::BeginPlay()
 		Gun->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("WeaponSocket"));
 		Gun->OwnerController = GetController();
 	}
+
+	PlayerController = Cast<AShooterSamPlayerController>(GetController());
 }
 
 void AShooterSamCharacter::Move(const FInputActionValue& Value)
@@ -113,6 +118,19 @@ void AShooterSamCharacter::Look(const FInputActionValue& Value)
 
 	// route the input
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
+}
+
+void AShooterSamCharacter::SpawnItemDrop()
+{
+	FTransform SpawnTransform(FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z - 90.0f));
+	AItemDrop* ItemDrop = GetWorld()->SpawnActorDeferred<AItemDrop>(ItemDropClass, SpawnTransform);
+
+	if (ItemDrop)
+	{
+		ItemDrop->DropMaterial = ItemDropMaterial;
+
+		UGameplayStatics::FinishSpawningActor(ItemDrop, SpawnTransform);
+	}
 }
 
 
@@ -174,12 +192,19 @@ void AShooterSamCharacter::PlayerStopShooting()
 {
 }
 
-void AShooterSamCharacter::UpdateHud()
+void AShooterSamCharacter::UpdateHudHealth()
 {
-	AShooterSamPlayerController* PlayerController = Cast<AShooterSamPlayerController>(GetController());
 	if (PlayerController)
 	{
 		PlayerController->HUDWidget->SetHealthBar(Health, MaxHealth);
+	}
+}
+
+void AShooterSamCharacter::UpdateHUDItems()
+{
+	if (PlayerController && ItemManager)
+	{
+		PlayerController->HUDWidget->UpdateItems(ItemManager->GetItems());
 	}
 }
 
@@ -188,15 +213,17 @@ void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, con
 {
 	if (DamagedActor->GetActorNameOrLabel() == InstigatedBy->GetActorNameOrLabel() | !IsAlive) return;
 
+	UE_LOG(LogTemp, Display, TEXT("OnDamageTaken"));
 	Health -= Damage;
 	
 	if (Health <= 0)
 	{
+		SpawnItemDrop();
 		Health = 0;
 		IsAlive = false;
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		DetachFromControllerPendingDestroy();
 	}
-	UpdateHud();
+	UpdateHudHealth();
 }

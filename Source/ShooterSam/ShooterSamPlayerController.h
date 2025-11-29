@@ -8,6 +8,7 @@
 #include "GameFramework/PlayerController.h"
 #include "ShooterSamPlayerController.generated.h"
 
+class AShooterSamCharacter;
 class UInputMappingContext;
 class UUserWidget;
 

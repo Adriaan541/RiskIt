@@ -4,10 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Gun.h"
+#include "ItemManager.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "ShooterSamCharacter.generated.h"
 
+class AItemDrop;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
@@ -70,6 +72,8 @@ protected:
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	void SpawnItemDrop();
 	
 	virtual void BeginPlay() override;
 
@@ -112,7 +116,20 @@ public:
 
 	AGun* Gun;
 
-	void UpdateHud();
+	UPROPERTY(EditAnywhere)
+	UItemManager* ItemManager;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AItemDrop> ItemDropClass;
+	
+	UPROPERTY(EditAnywhere)
+	UMaterial* ItemDropMaterial;
+
+	AShooterSamPlayerController* PlayerController;
+
+	void UpdateHudHealth();
+
+	void UpdateHUDItems();
 	
 	UFUNCTION()
 	void OnDamageTaken(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
