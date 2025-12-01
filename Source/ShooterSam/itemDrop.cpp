@@ -42,15 +42,15 @@ void AItemDrop::Tick(float DeltaTime)
 void AItemDrop::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Display, TEXT("Overlap"));
 	if (OtherActor->ActorHasTag("Player"))
 	{
 		if (AShooterSamCharacter* OtherCharacter = Cast<AShooterSamCharacter>(OtherActor))
 		{
 			if (UItemManager* CharacterItemManager = OtherCharacter->ItemManager)
 			{
-				UE_LOG(LogTemp, Display, TEXT("CharacterItemManager"));
 				CharacterItemManager->AddItem(ItemName);
+
+				Destroy();
 			}
 		}
 	}
