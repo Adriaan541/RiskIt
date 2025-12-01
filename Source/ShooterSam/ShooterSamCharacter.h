@@ -9,6 +9,7 @@
 #include "Logging/LogMacros.h"
 #include "ShooterSamCharacter.generated.h"
 
+class AShooterSamGameMode;
 class AItemDrop;
 class USpringArmComponent;
 class UCameraComponent;
@@ -117,11 +118,10 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AItemDrop> ItemDropClass;
-	
-	UPROPERTY(EditAnywhere)
-	UMaterial* ItemDropMaterial;
 
 	AShooterSamPlayerController* PlayerController;
+
+	AShooterSamGameMode* GameMode;
 
 	void UpdateHudHealth();
 	

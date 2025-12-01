@@ -11,7 +11,6 @@ void AShooterAI::BeginPlay()
 
 	
 	// PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
-	
 }
 
 void AShooterAI::Tick(float DeltaTime)

@@ -71,7 +71,6 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
-
 	UPROPERTY(EditAnywhere)
 	TArray<FItem> Items;
 
@@ -80,7 +79,6 @@ public:
 	FItem GetRandomItem();
 
 	void Init(UHUDWidget* HUDWidgetReference) ;
-
 	
 	void CreateWidgets();
 
