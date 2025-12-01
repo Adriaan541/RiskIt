@@ -38,10 +38,8 @@ void UItemManager::CreateItemBoxWidget(FItem& Item)
 	if (HUDWidget)
 	{
 		UItemBox* ItemBoxWidget = CreateWidget<UItemBox>(HUDWidget, ItemWidgetClass, WidgetNameFromItemName(Item.ItemName));
-		UE_LOG(LogTemp, Display, TEXT("Creating item widget"));
 		if (ItemBoxWidget)
 		{
-			UE_LOG(LogTemp, Display, TEXT("Item Widget Created"));
 			Item.ItemBox = ItemBoxWidget;
 			ItemBoxWidget->Init(Item.Icon, Item.Amount);
 		}
@@ -61,10 +59,8 @@ void UItemManager::CreateWidgets()
 	for (FItem& Item : Items)
 	{
 		UItemBox* ItemBoxWidget = CreateWidget<UItemBox>(HUDWidget, *ItemWidgetClass, WidgetNameFromItemName(Item.ItemName));
-		UE_LOG(LogTemp, Display, TEXT("Creating item widget"));
 		if (ItemBoxWidget)
 		{
-			UE_LOG(LogTemp, Display, TEXT("Item Widget Created"));
 			Item.ItemBox = ItemBoxWidget;
 			ItemBoxWidget->Init(Item.Icon, Item.Amount);
 		}
@@ -80,13 +76,7 @@ void UItemManager::UpdateItemBar()
 {
 	if (HUDWidget)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Item Bar Updated"));
-		UE_LOG(LogTemp, Display, TEXT("Items: %i"), GetItems().Num());
 		HUDWidget->UpdateItemBar(GetItems());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Display, TEXT("HUDWidget null"));
 	}
 }
 

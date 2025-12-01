@@ -17,24 +17,6 @@ class UTextBlock;
  * 
  */
 
-USTRUCT(BlueprintType)
-struct FItemWidgetsWithNames
-{
-	GENERATED_BODY()
-
-	FName ItemName;
-	UUserWidget* ItemWidget;
-};
-
-USTRUCT(BlueprintType)
-struct FItemValues
-{
-	GENERATED_BODY()
-
-	FString ItemName;
-	int32 Amount;
-};
-
 UCLASS()
 class SHOOTERSAM_API UHUDWidget : public UUserWidget
 {
@@ -50,19 +32,7 @@ public:
 	UPROPERTY(EditAnywhere, meta = (BindWidgetOptional))
 	UHorizontalBox* ItemBar;
 
-	TSubclassOf<UItemBox> ItemWidgetClass;
-
-	TArray<UTexture2D*> ItemImages;
-
-	TArray<FItemWidgetsWithNames> ItemWidgets;
-
 	void SetHealthBar(float CurrentHealth, float MaxHealth);
 
 	void UpdateItemBar(TArray<FItem> Items);
-
-	void UpdateItems(TArray<FItemValues> Items);
-
-	FName WidgetNameFromItemName(FString ItemName);
-
-	void CreateItemWidget(FItemValues Item);
 };

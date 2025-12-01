@@ -35,29 +35,16 @@ void AShooterSamPlayerController::BeginPlay()
 	}
 
 	HUDWidget = CreateWidget<UHUDWidget>(this, HUDWidgetClass);
+	AShooterSamCharacter* ShooterSamCharacter = Cast<AShooterSamCharacter>(GetPawn());
 	if (HUDWidget)
 	{
 		HUDWidget->AddToPlayerScreen();
-		HUDWidget->ItemWidgetClass = ItemBoxWidgetClass;
 
-		HUDWidget->ItemImages = HUDItemImages;
-
-		AShooterSamCharacter* ShooterSamCharacter = Cast<AShooterSamCharacter>(GetPawn());
+		
 		if (ShooterSamCharacter && ShooterSamCharacter->ItemManager)
 		{
 			ShooterSamCharacter->ItemManager->Init(HUDWidget);
 		}
-	}
-
-	FTransform SpawnTransform;
-	AItemDrop* ItemDrop = GetWorld()->SpawnActorDeferred<AItemDrop>(ItemDropClass, SpawnTransform);
-	
-	if (ItemDrop)
-	{
-		ItemDrop->ItemName = TEXT("Ammo");
-		ItemDrop->DropMaterial = ItemDropMaterial;
-
-		UGameplayStatics::FinishSpawningActor(ItemDrop, SpawnTransform);
 	}
 }
 

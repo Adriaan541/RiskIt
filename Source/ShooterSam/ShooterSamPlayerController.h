@@ -50,16 +50,4 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	UHUDWidget* HUDWidget;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UItemBox> ItemBoxWidgetClass;
-
-	UPROPERTY(EditAnywhere)
-	TArray<UTexture2D*> HUDItemImages;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AItemDrop> ItemDropClass;
-	
-	UPROPERTY(EditAnywhere)
-	UMaterial* ItemDropMaterial;
 };
