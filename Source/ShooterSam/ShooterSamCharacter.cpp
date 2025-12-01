@@ -215,6 +215,12 @@ void AShooterSamCharacter::UpdateHudHealth()
 	}
 }
 
+void AShooterSamCharacter::DestroyCharacter()
+{
+	Gun->Destroy();
+	Destroy();
+}
+
 void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
                                          class AController* InstigatedBy, AActor* DamageCauser)
 {
