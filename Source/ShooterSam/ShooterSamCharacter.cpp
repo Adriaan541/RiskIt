@@ -18,7 +18,7 @@ AShooterSamCharacter::AShooterSamCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -57,25 +57,28 @@ AShooterSamCharacter::AShooterSamCharacter()
 void AShooterSamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	{
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AShooterSamCharacter::Move);
-		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this, &AShooterSamCharacter::Look);
+		EnhancedInputComponent->BindAction(MouseLookAction, ETriggerEvent::Triggered, this,
+		                                   &AShooterSamCharacter::Look);
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AShooterSamCharacter::Look);
 
-		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Started, this, &AShooterSamCharacter::Shoot);
-		
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AShooterSamCharacter::AutoShoot);
 	}
 	else
 	{
-		UE_LOG(LogShooterSam, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+		UE_LOG(LogShooterSam, Error,
+		       TEXT(
+			       "'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."
+		       ), *GetNameSafe(this));
 	}
 }
 
@@ -85,11 +88,11 @@ void AShooterSamCharacter::BeginPlay()
 
 	Health = MaxHealth;
 	UpdateHudHealth();
-	
+
 	OnTakeAnyDamage.AddDynamic(this, &AShooterSamCharacter::OnDamageTaken);
 
 	GetMesh()->HideBoneByName("weapon_r", PBO_None);
-	
+
 	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
 	if (Gun)
 	{
@@ -100,6 +103,16 @@ void AShooterSamCharacter::BeginPlay()
 	}
 
 	PlayerController = Cast<AShooterSamPlayerController>(GetController());
+}
+
+void AShooterSamCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (TimeSinceLastShot < ShotIntervalSeconds)
+	{
+		TimeSinceLastShot += DeltaTime;
+	}
 }
 
 void AShooterSamCharacter::Move(const FInputActionValue& Value)
@@ -179,20 +192,18 @@ void AShooterSamCharacter::DoJumpEnd()
 	StopJumping();
 }
 
+void AShooterSamCharacter::AutoShoot()
+{
+	if (TimeSinceLastShot >= ShotIntervalSeconds)
+	{
+		Shoot();
+		TimeSinceLastShot = 0.0f;
+	}
+}
+
 void AShooterSamCharacter::Shoot()
 {
 	Gun->PullTrigger();
-}
-
-/**
- * TODO: Add automatic shooting
- */
-void AShooterSamCharacter::PlayerStartShooting()
-{
-}
-
-void AShooterSamCharacter::PlayerStopShooting()
-{
 }
 
 void AShooterSamCharacter::UpdateHudHealth()
@@ -209,7 +220,7 @@ void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, con
 	if (DamagedActor->GetActorNameOrLabel() == InstigatedBy->GetActorNameOrLabel() | !IsAlive) return;
 
 	Health -= Damage;
-	
+
 	if (Health <= 0)
 	{
 		SpawnItemDrop();

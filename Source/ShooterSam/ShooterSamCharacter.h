@@ -56,52 +56,40 @@ protected:
 	UInputAction* ShootAction;
 
 public:
-
-	/** Constructor */
 	AShooterSamCharacter();	
 
 protected:
-
-	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
-
-	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
-	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
 	void SpawnItemDrop();
 	
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaTime) override;
+
 public:
-	/** Handles move inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoMove(float Right, float Forward);
 
-	/** Handles look inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoLook(float Yaw, float Pitch);
 
-	/** Handles jump pressed inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpStart();
 
-	/** Handles jump pressed inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
 
 	UFUNCTION(BlueprintCallable, Category="Input")
+	virtual void AutoShoot();
+
+	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void Shoot();
-
-	UFUNCTION(BlueprintCallable, Category="Input")
-	void PlayerStartShooting();
-
-	UFUNCTION(BlueprintCallable, Category="Input")
-	void PlayerStopShooting();
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AGun> GunClass;
@@ -116,6 +104,14 @@ public:
 
 	AGun* Gun;
 
+	UPROPERTY(EditAnywhere)
+	float ShotIntervalSeconds = 0.5f;
+
+protected:
+	float TimeSinceLastShot;
+
+public:
+	
 	UPROPERTY(EditAnywhere)
 	UItemManager* ItemManager;
 
