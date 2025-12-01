@@ -67,7 +67,6 @@ void AShooterSamGameMode::Tick(float DeltaTime)
 
 	if (TimeSinceLastSpawnWave > SpawnWaveIntervalSeconds)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Spawning wave"))
 		SpawnEnemyWave();
 		TimeSinceLastSpawnWave = 0;
 	}
