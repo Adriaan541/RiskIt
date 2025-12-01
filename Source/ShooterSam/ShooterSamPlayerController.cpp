@@ -5,8 +5,11 @@
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 #include "InputMappingContext.h"
+#include "ItemDrop.h"
 #include "Blueprint/UserWidget.h"
 #include "ShooterSam.h"
+#include "ShooterSamCharacter.h"
+#include "Kismet/GameplayStatics.h"
 #include "Widgets/Input/SVirtualJoystick.h"
 
 void AShooterSamPlayerController::BeginPlay()
@@ -32,17 +35,16 @@ void AShooterSamPlayerController::BeginPlay()
 	}
 
 	HUDWidget = CreateWidget<UHUDWidget>(this, HUDWidgetClass);
+	AShooterSamCharacter* ShooterSamCharacter = Cast<AShooterSamCharacter>(GetPawn());
 	if (HUDWidget)
 	{
 		HUDWidget->AddToPlayerScreen();
-		HUDWidget->ItemWidgetClass = ItemBoxWidgetClass;
 
-		HUDWidget->ItemImages = HUDItemImages;
-		TArray<FItemValues> ItemValues;
-		ItemValues.Add({FString::Printf(TEXT("Ammo")), 1});
-		ItemValues.Add({FString::Printf(TEXT("Ammo2")), 200});
 		
-		HUDWidget->UpdateItems(ItemValues);
+		if (ShooterSamCharacter && ShooterSamCharacter->ItemManager)
+		{
+			ShooterSamCharacter->ItemManager->Init(HUDWidget);
+		}
 	}
 }
 

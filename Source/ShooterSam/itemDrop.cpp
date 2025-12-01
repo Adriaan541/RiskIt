@@ -3,6 +3,8 @@
 
 #include "itemDrop.h"
 
+#include "ShooterSamCharacter.h"
+
 // Sets default values
 AItemDrop::AItemDrop()
 {
@@ -23,6 +25,7 @@ AItemDrop::AItemDrop()
 void AItemDrop::BeginPlay()
 {
 	Super::BeginPlay();
+	CapsuleCollision->OnComponentBeginOverlap.AddDynamic(this, &AItemDrop::OnOverlapBegin);
 
 	IconMesh->SetMaterial(0, DropMaterial);
 }
@@ -32,12 +35,24 @@ void AItemDrop::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	FRotator Rotation = FRotator(100.0f * DeltaTime, 0, 0);
+	FRotator Rotation = FRotator(0, 100.0f * DeltaTime, 0);
 	AddActorLocalRotation(Rotation);
 }
 
 void AItemDrop::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	if (OtherActor->ActorHasTag("Player"))
+	{
+		if (AShooterSamCharacter* OtherCharacter = Cast<AShooterSamCharacter>(OtherActor))
+		{
+			if (UItemManager* CharacterItemManager = OtherCharacter->ItemManager)
+			{
+				CharacterItemManager->AddItem(ItemName);
+
+				Destroy();
+			}
+		}
+	}
 }
 

@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ItemDrop.h"
 #include "UI/HUDWidget.h"
 #include "GameFramework/PlayerController.h"
 #include "ShooterSamPlayerController.generated.h"
 
+class AShooterSamCharacter;
 class UInputMappingContext;
 class UUserWidget;
 
@@ -48,10 +50,4 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	UHUDWidget* HUDWidget;
-
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UItemBox> ItemBoxWidgetClass;
-
-	UPROPERTY(EditAnywhere)
-	TArray<UTexture2D*> HUDItemImages;
 };

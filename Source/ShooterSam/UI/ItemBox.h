@@ -26,6 +26,8 @@ public:
 	UPROPERTY(EditAnywhere, meta = (BindWidgetOptional))
 	UTextBlock* TextBox;
 
+	FName ItemName;
+
 	void Init(UTexture2D* ItemIcon, int Amount);
 
 	void SetAmount(int Amount);

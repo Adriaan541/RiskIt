@@ -9,21 +9,13 @@
 #include "Components/ProgressBar.h"
 #include "HUDWidget.generated.h"
 
+struct FItem;
 class UImage;
 class UScaleBox;
 class UTextBlock;
 /**
  * 
  */
-
-USTRUCT(BlueprintType)
-struct FItemValues
-{
-	GENERATED_BODY()
-	
-	FString ItemName;
-	int32 Amount;
-};
 
 UCLASS()
 class SHOOTERSAM_API UHUDWidget : public UUserWidget
@@ -39,14 +31,8 @@ public:
 
 	UPROPERTY(EditAnywhere, meta = (BindWidgetOptional))
 	UHorizontalBox* ItemBar;
-	
-	TSubclassOf<UItemBox> ItemWidgetClass;
-	
-	TArray<UTexture2D*> ItemImages;
-
-	TArray<UUserWidget*> ItemWidgets;
 
 	void SetHealthBar(float CurrentHealth, float MaxHealth);
 
-	void UpdateItems(TArray<FItemValues> Items);
+	void UpdateItemBar(TArray<FItem> Items);
 };

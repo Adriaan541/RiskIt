@@ -4,10 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Gun.h"
+#include "ItemManager.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "ShooterSamCharacter.generated.h"
 
+class AItemDrop;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputAction;
@@ -54,41 +56,37 @@ protected:
 	UInputAction* ShootAction;
 
 public:
-
-	/** Constructor */
 	AShooterSamCharacter();	
 
 protected:
-
-	/** Initialize input action bindings */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
-
-	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
 
-	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+
+	void SpawnItemDrop();
 	
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaTime) override;
+
 public:
-	/** Handles move inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoMove(float Right, float Forward);
 
-	/** Handles look inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoLook(float Yaw, float Pitch);
 
-	/** Handles jump pressed inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpStart();
 
-	/** Handles jump pressed inputs from either controls or UI interfaces */
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void DoJumpEnd();
+
+	UFUNCTION(BlueprintCallable, Category="Input")
+	virtual void AutoShoot();
 
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void Shoot();
@@ -106,7 +104,26 @@ public:
 
 	AGun* Gun;
 
-	void UpdateHud();
+	UPROPERTY(EditAnywhere)
+	float ShotIntervalSeconds = 0.5f;
+
+protected:
+	float TimeSinceLastShot;
+
+public:
+	
+	UPROPERTY(EditAnywhere)
+	UItemManager* ItemManager;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AItemDrop> ItemDropClass;
+	
+	UPROPERTY(EditAnywhere)
+	UMaterial* ItemDropMaterial;
+
+	AShooterSamPlayerController* PlayerController;
+
+	void UpdateHudHealth();
 	
 	UFUNCTION()
 	void OnDamageTaken(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
