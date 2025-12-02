@@ -10,6 +10,8 @@
 
 #include "Gun.generated.h"
 
+class ABullet;
+
 UCLASS()
 class SHOOTERSAM_API AGun : public AActor
 {
@@ -27,6 +29,12 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ABullet> BulletClass;
+
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* BulletSpawnPoint;
+
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* SceneRoot;
 
@@ -38,9 +46,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	UNiagaraComponent* MuzzleFlashParticleSystem;
-
-	UPROPERTY(EditAnywhere)
-	UNiagaraSystem* ImpactParticleSystem;
 	
 	UPROPERTY(EditAnywhere)
 	float BulletDamage = 10.0f;
