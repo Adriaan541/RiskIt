@@ -5,11 +5,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "Engine/LocalPlayer.h"
 #include "InputMappingContext.h"
-#include "ItemDrop.h"
 #include "Blueprint/UserWidget.h"
 #include "ShooterSam.h"
 #include "ShooterSamCharacter.h"
-#include "Kismet/GameplayStatics.h"
 #include "Widgets/Input/SVirtualJoystick.h"
 
 void AShooterSamPlayerController::BeginPlay()
