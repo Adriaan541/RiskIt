@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Gun.h"
-#include "ItemManager.h"
+#include "Items/ItemManager.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "ShooterSamCharacter.generated.h"
