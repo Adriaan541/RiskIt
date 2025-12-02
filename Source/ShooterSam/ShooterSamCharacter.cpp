@@ -11,6 +11,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "ShooterSam.h"
+#include "ShooterSamGameMode.h"
 #include "ShooterSamPlayerController.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -214,6 +215,12 @@ void AShooterSamCharacter::UpdateHudHealth()
 	}
 }
 
+void AShooterSamCharacter::DestroyCharacter()
+{
+	Gun->Destroy();
+	Destroy();
+}
+
 void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
                                          class AController* InstigatedBy, AActor* DamageCauser)
 {
@@ -226,6 +233,11 @@ void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, con
 		SpawnItemDrop();
 		Health = 0;
 		IsAlive = false;
+		if (GameMode)
+		{
+			GameMode->EnemyDied(this);
+		}
+		
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		DetachFromControllerPendingDestroy();

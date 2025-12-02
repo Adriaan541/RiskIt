@@ -4,11 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Gun.h"
-#include "ItemManager.h"
+#include "Items/ItemManager.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "ShooterSamCharacter.generated.h"
 
+class AShooterSamGameMode;
 class AItemDrop;
 class USpringArmComponent;
 class UCameraComponent;
@@ -117,13 +118,14 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AItemDrop> ItemDropClass;
-	
-	UPROPERTY(EditAnywhere)
-	UMaterial* ItemDropMaterial;
 
 	AShooterSamPlayerController* PlayerController;
 
+	AShooterSamGameMode* GameMode;
+
 	void UpdateHudHealth();
+
+	void DestroyCharacter();
 	
 	UFUNCTION()
 	void OnDamageTaken(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);

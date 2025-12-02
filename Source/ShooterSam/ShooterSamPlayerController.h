@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ItemDrop.h"
 #include "UI/HUDWidget.h"
 #include "GameFramework/PlayerController.h"
 #include "ShooterSamPlayerController.generated.h"

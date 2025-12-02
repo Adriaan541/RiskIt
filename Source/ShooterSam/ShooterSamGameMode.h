@@ -6,6 +6,9 @@
 #include "GameFramework/GameModeBase.h"
 #include "ShooterSamGameMode.generated.h"
 
+class AEnemySpawner;
+class AShooterSamCharacter;
+class AShooterAI;
 /**
  *  Simple GameMode for a third person game
  */
@@ -15,12 +18,32 @@ class AShooterSamGameMode : public AGameModeBase
 	GENERATED_BODY()
 
 protected:
+	AShooterSamCharacter* Player;
+	
+	TArray<AShooterAI*> ShooterAIActors;
+
+	TArray<AEnemySpawner*> CombatEnemySpawners;
+
+	UPROPERTY(VisibleAnywhere)
+	float TimeSinceLastSpawnWave;
+	
 	virtual void BeginPlay() override;
 
-public:
+	virtual void Tick(float DeltaTime) override;
+
+	void SpawnEnemyWave();
+
+	void SpawnEnemy(AEnemySpawner* EnemySpawner);
+
 	
-	/** Constructor */
+
+public:
 	AShooterSamGameMode();
+
+	void EnemyDied(AShooterSamCharacter* Enemy);
+
+	UPROPERTY(EditAnywhere)
+	float SpawnWaveIntervalSeconds = 60.0f;
 };
 
 
