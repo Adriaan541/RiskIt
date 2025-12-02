@@ -3,6 +3,7 @@
 
 #include "Gun.h"
 
+#include "Gun/Bullet.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -19,6 +20,9 @@ AGun::AGun()
 
 	MuzzleFlashParticleSystem = CreateDefaultSubobject<UNiagaraComponent>(TEXT("MuzzleFlash"));
 	MuzzleFlashParticleSystem->SetupAttachment(SkeletalMesh);
+
+	BulletSpawnPoint = CreateDefaultSubobject<USceneComponent>(TEXT("BulletSpawnPoint"));
+	BulletSpawnPoint->SetupAttachment(SkeletalMesh);
 }
 
 // Called when the game starts or when spawned
@@ -57,21 +61,25 @@ void AGun::PullTrigger()
 		Params.AddIgnoredActor(GetOwner());
 		GetWorld()->LineTraceSingleByChannel(HitResult, ViewpointLocation, BulletEndpoint, ECC_GameTraceChannel2,
 		                                     Params);
+		FVector Direction;
 		if (HitResult.bBlockingHit)
 		{
-			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), ImpactParticleSystem, HitResult.ImpactPoint,
-			                                               HitResult.ImpactPoint.Rotation(), FVector(0.2f, 0.2f, 0.2f));
-
-			if (ImpactSound)
-			{
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), ImpactSound, HitResult.ImpactPoint);
-			}
-
-			if (AActor* HitActor = HitResult.GetActor())
-			{
-				UGameplayStatics::ApplyDamage(HitActor, BulletDamage, OwnerController, this,
-				                              UDamageType::StaticClass());
-			}
+			Direction = HitResult.Location - BulletSpawnPoint->GetComponentLocation();
+		}
+		else
+		{
+			Direction = BulletEndpoint - BulletSpawnPoint->GetComponentLocation();
+		}
+		
+		Direction.Normalize();
+		FTransform SpawnTransform(Direction.Rotation(), BulletSpawnPoint->GetComponentLocation());
+		ABullet* Bullet = GetWorld()->SpawnActorDeferred<ABullet>(BulletClass, SpawnTransform);
+		
+		if (Bullet)
+		{
+			Bullet->Damage = BulletDamage;
+			Bullet->SetOwner(this);
+			UGameplayStatics::FinishSpawningActor(Bullet, SpawnTransform);
 		}
 	}
 }

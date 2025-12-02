@@ -13,6 +13,7 @@
 #include "ShooterSam.h"
 #include "ShooterSamGameMode.h"
 #include "ShooterSamPlayerController.h"
+#include "Items/itemDrop.h"
 #include "Kismet/GameplayStatics.h"
 
 AShooterSamCharacter::AShooterSamCharacter()
