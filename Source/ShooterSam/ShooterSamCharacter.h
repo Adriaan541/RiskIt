@@ -67,7 +67,7 @@ protected:
 
 	void Look(const FInputActionValue& Value);
 
-	void SpawnItemDrop();
+	void SpawnItemDrop() const;
 	
 	virtual void BeginPlay() override;
 
@@ -91,9 +91,26 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void Shoot();
+
+	int32 GetLevelInfoFromExperience(float CurrentExperienceAmount, float &ExperienceNeededForCalculatedLevel, float &MaxExperienceCurrentLevel) const;
+
+	void SetExperience(float ExperienceAmount);
+
+	void GainExperience(float ExperienceAmount);
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AGun> GunClass;
+
+	UPROPERTY(EditAnywhere)
+	float BaseExperienceNeededForLevelUp = 100.0f;
+
+	UPROPERTY(VisibleAnywhere)
+	float CurrentExperience;
+
+	int32 Level = 1;
+	
+	UPROPERTY(EditAnywhere)
+	float BaseHealth = 100.0f;
 
 	UPROPERTY(EditAnywhere)
 	float MaxHealth = 100.0f;

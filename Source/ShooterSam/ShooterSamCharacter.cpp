@@ -89,7 +89,6 @@ void AShooterSamCharacter::BeginPlay()
 	Super::BeginPlay();
 
 	Health = MaxHealth;
-	UpdateHudHealth();
 
 	OnTakeAnyDamage.AddDynamic(this, &AShooterSamCharacter::OnDamageTaken);
 
@@ -105,6 +104,8 @@ void AShooterSamCharacter::BeginPlay()
 	}
 
 	PlayerController = Cast<AShooterSamPlayerController>(GetController());
+	UpdateHudHealth();
+	SetExperience(CurrentExperience);
 }
 
 void AShooterSamCharacter::Tick(float DeltaTime)
@@ -134,23 +135,6 @@ void AShooterSamCharacter::Look(const FInputActionValue& Value)
 	// route the input
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
 }
-
-void AShooterSamCharacter::SpawnItemDrop()
-{
-	FTransform SpawnTransform(FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z - 90.0f));
-	AItemDrop* ItemDrop = GetWorld()->SpawnActorDeferred<AItemDrop>(ItemDropClass, SpawnTransform);
-
-	if (ItemDrop && ItemManager)
-	{
-		FItem RandomItem = ItemManager->GetRandomItem();
-
-		ItemDrop->ItemName = RandomItem.ItemName;
-		ItemDrop->DropMaterial = RandomItem.ItemMaterial;
-
-		UGameplayStatics::FinishSpawningActor(ItemDrop, SpawnTransform);
-	}
-}
-
 
 void AShooterSamCharacter::DoMove(float Right, float Forward)
 {
@@ -208,6 +192,42 @@ void AShooterSamCharacter::Shoot()
 	Gun->PullTrigger();
 }
 
+int32 AShooterSamCharacter::GetLevelInfoFromExperience(float CurrentExperienceAmount, float &ExperienceNeededForCalculatedLevel, float &MaxExperienceCurrentLevel) const
+{
+	int32 CalculatedLevel = 0;
+	ExperienceNeededForCalculatedLevel = 0.0f;
+	MaxExperienceCurrentLevel = 0.0f;
+	while (true)
+	{
+		MaxExperienceCurrentLevel = BaseExperienceNeededForLevelUp * FMath::Pow(1.2f, CalculatedLevel);
+		
+		if (CurrentExperienceAmount < ExperienceNeededForCalculatedLevel + MaxExperienceCurrentLevel)
+		{
+			break;
+		}
+		ExperienceNeededForCalculatedLevel += MaxExperienceCurrentLevel;
+		CalculatedLevel++;
+	}
+	return CalculatedLevel + 1;
+}
+
+void AShooterSamCharacter::SetExperience(float ExperienceAmount)
+{
+	float ExperienceNeededForCalculatedLevel;
+	float MaxExperienceCurrentLevel;
+	Level = GetLevelInfoFromExperience(ExperienceAmount, ExperienceNeededForCalculatedLevel, MaxExperienceCurrentLevel);
+	if (PlayerController)
+	{
+		PlayerController->HUDWidget->SetExperienceBar(Level, ExperienceAmount - ExperienceNeededForCalculatedLevel, MaxExperienceCurrentLevel);
+	}
+}
+
+void AShooterSamCharacter::GainExperience(float ExperienceAmount)
+{
+	CurrentExperience += ExperienceAmount;
+	SetExperience(CurrentExperience);
+}
+
 void AShooterSamCharacter::UpdateHudHealth()
 {
 	if (PlayerController)
@@ -222,6 +242,22 @@ void AShooterSamCharacter::DestroyCharacter()
 	Destroy();
 }
 
+void AShooterSamCharacter::SpawnItemDrop() const
+{
+	FTransform SpawnTransform(FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z - 90.0f));
+	AItemDrop* ItemDrop = GetWorld()->SpawnActorDeferred<AItemDrop>(ItemDropClass, SpawnTransform);
+
+	if (ItemDrop && ItemManager)
+	{
+		FItem RandomItem = ItemManager->GetRandomItem();
+
+		ItemDrop->ItemName = RandomItem.ItemName;
+		ItemDrop->DropMaterial = RandomItem.ItemMaterial;
+
+		UGameplayStatics::FinishSpawningActor(ItemDrop, SpawnTransform);
+	}
+}
+
 void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
                                          class AController* InstigatedBy, AActor* DamageCauser)
 {
@@ -231,6 +267,11 @@ void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, con
 
 	if (Health <= 0)
 	{
+		AShooterSamCharacter* InstigatorCharacter = Cast<AShooterSamCharacter>(InstigatedBy->GetPawn());
+		if (InstigatorCharacter)
+		{
+			InstigatorCharacter->GainExperience(CurrentExperience / 5.0f);
+		}
 		SpawnItemDrop();
 		Health = 0;
 		IsAlive = false;
