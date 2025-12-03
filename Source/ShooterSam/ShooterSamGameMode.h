@@ -35,8 +35,6 @@ protected:
 
 	void SpawnEnemy(AEnemySpawner* EnemySpawner);
 
-	
-
 public:
 	AShooterSamGameMode();
 

@@ -85,7 +85,7 @@ void AShooterSamGameMode::SpawnEnemyWave()
 
 void AShooterSamGameMode::SpawnEnemy(AEnemySpawner* EnemySpawner)
 {
-	AShooterAI* Enemy = EnemySpawner->SpawnEnemy(Player);
+	AShooterAI* Enemy = EnemySpawner->SpawnEnemy(Player, 500.0f);
 	if (Enemy)
 	{
 		Enemy->ThisCharacter->GameMode = this;

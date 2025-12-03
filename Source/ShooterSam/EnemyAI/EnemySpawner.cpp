@@ -47,12 +47,13 @@ void AEnemySpawner::EnemyDied()
 	}
 }
 
-AShooterAI* AEnemySpawner::SpawnEnemy(AShooterSamCharacter* Player)
+AShooterAI* AEnemySpawner::SpawnEnemy(AShooterSamCharacter* Player, float EnemyExperience)
 {
 	FTransform SpawnTransform(FVector(SpawnCapsule->GetComponentLocation()));
 	AShooterSamCharacter* ShooterSamCharacter = GetWorld()->SpawnActorDeferred<AShooterSamCharacter>(
 		ShooterSamClass, SpawnTransform);
 
+	ShooterSamCharacter->CurrentExperience = EnemyExperience;
 	ShooterSamCharacter->AutoPossessAI = EAutoPossessAI::Spawned;
 	
 	UGameplayStatics::FinishSpawningActor(ShooterSamCharacter, SpawnTransform);
