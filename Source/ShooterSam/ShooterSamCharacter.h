@@ -9,6 +9,8 @@
 #include "Logging/LogMacros.h"
 #include "ShooterSamCharacter.generated.h"
 
+class UWidgetComponent;
+class UEnemyHealthBar;
 class AShooterSamGameMode;
 class AItemDrop;
 class USpringArmComponent;
@@ -63,6 +65,8 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
+	void SetEnemyHealthBar();
+	
 	void Move(const FInputActionValue& Value);
 
 	void Look(const FInputActionValue& Value);
@@ -91,8 +95,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void Shoot();
-
-	int32 GetLevelInfoFromExperience(float CurrentExperienceAmount, float &ExperienceNeededForCalculatedLevel, float &MaxExperienceCurrentLevel) const;
 
 	void SetLevel(int32 NewLevel);
 
@@ -134,6 +136,10 @@ public:
 protected:
 	float TimeSinceLastShot;
 
+	UWidgetComponent* EnemyHealthBarWidgetComponent;
+
+	float TimeSinceEnemyHealthBarVisible = 0.0f;
+
 public:
 	
 	UPROPERTY(EditAnywhere)
@@ -142,11 +148,25 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AItemDrop> ItemDropClass;
 
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* EnemyHealthBarLocation;
+	
+	UPROPERTY(EditAnywhere)
+	UEnemyHealthBar* EnemyHealthBarWidget;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> EnemyHealthBarWidgetClass;
+
+	UPROPERTY(EditAnywhere)
+	float SetEnemyHealthBarInvisibleAfterSeconds = 5.0f;
+
 	AShooterSamPlayerController* PlayerController;
 
 	AShooterSamGameMode* GameMode;
 
 	void UpdateHudHealth();
+
+	void SetEnemyHealthBarVisible(bool IsVisible);
 
 	void DestroyCharacter();
 	

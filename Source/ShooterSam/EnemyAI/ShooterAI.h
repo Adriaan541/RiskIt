@@ -36,6 +36,8 @@ public:
 
 	AEnemySpawner* Spawner;
 
+	AActor* CurrentFocusActor;
+
 	AShooterSamCharacter* PlayerCharacter;
 	AShooterSamCharacter* ThisCharacter;
 

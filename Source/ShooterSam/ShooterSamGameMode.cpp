@@ -86,6 +86,31 @@ void AShooterSamGameMode::Tick(float DeltaTime)
 	InGameTime = NewInGameTime;
 }
 
+float AShooterSamGameMode::GetSpawnedAIExperience()
+{
+	return BaseExperienceNeededForLevelUp * FMath::Pow(XPMultiplierForNextLevel, static_cast<float>(InGameTime) / 60);
+}
+
+int32 AShooterSamGameMode::GetLevelInfoFromExperience(float CurrentExperienceAmount,
+	float& ExperienceNeededForCalculatedLevel, float& MaxExperienceCurrentLevel) const
+{
+	int32 CalculatedLevel = 0;
+	ExperienceNeededForCalculatedLevel = 0.0f;
+	MaxExperienceCurrentLevel = 0.0f;
+	while (true)
+	{
+		MaxExperienceCurrentLevel = BaseExperienceNeededForLevelUp * FMath::Pow(XPMultiplierForNextLevel, CalculatedLevel);
+		
+		if (CurrentExperienceAmount < ExperienceNeededForCalculatedLevel + MaxExperienceCurrentLevel)
+		{
+			break;
+		}
+		ExperienceNeededForCalculatedLevel += MaxExperienceCurrentLevel;
+		CalculatedLevel++;
+	}
+	return CalculatedLevel + 1;
+}
+
 void AShooterSamGameMode::SpawnEnemyWave()
 {
 	for (AEnemySpawner* Spawner : CombatEnemySpawners)
@@ -99,7 +124,7 @@ void AShooterSamGameMode::SpawnEnemyWave()
 
 void AShooterSamGameMode::SpawnEnemy(AEnemySpawner* EnemySpawner)
 {
-	AShooterAI* Enemy = EnemySpawner->SpawnEnemy(Player, 500.0f);
+	AShooterAI* Enemy = EnemySpawner->SpawnEnemy(Player, GetSpawnedAIExperience());
 	if (Enemy)
 	{
 		Enemy->ThisCharacter->GameMode = this;

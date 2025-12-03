@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "ShooterSamCharacter.h"
+
+#include "UI/EnemyHealthBar.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -13,8 +15,10 @@
 #include "ShooterSam.h"
 #include "ShooterSamGameMode.h"
 #include "ShooterSamPlayerController.h"
+#include "Components/WidgetComponent.h"
 #include "Items/itemDrop.h"
 #include "Kismet/GameplayStatics.h"
+#include "UI/EnemyHealthBar.h"
 
 AShooterSamCharacter::AShooterSamCharacter()
 {
@@ -54,6 +58,9 @@ AShooterSamCharacter::AShooterSamCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
 	ItemManager = CreateDefaultSubobject<UItemManager>(TEXT("ItemManager"));
+	
+	EnemyHealthBarLocation = CreateDefaultSubobject<USceneComponent>(TEXT("EnemyHealthBarLocation"));
+	EnemyHealthBarLocation->SetupAttachment(RootComponent);
 }
 
 void AShooterSamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -84,6 +91,8 @@ void AShooterSamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	}
 }
 
+
+
 void AShooterSamCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -103,6 +112,9 @@ void AShooterSamCharacter::BeginPlay()
 
 	PlayerController = Cast<AShooterSamPlayerController>(GetController());
 	SetExperience(CurrentExperience);
+
+	SetEnemyHealthBar();
+	
 	Health = MaxHealth;
 	
 	UpdateHudHealth();
@@ -115,6 +127,33 @@ void AShooterSamCharacter::Tick(float DeltaTime)
 	if (TimeSinceLastShot < ShotIntervalSeconds)
 	{
 		TimeSinceLastShot += DeltaTime;
+	}
+	if (TimeSinceEnemyHealthBarVisible < SetEnemyHealthBarInvisibleAfterSeconds)
+	{
+		TimeSinceEnemyHealthBarVisible += DeltaTime;
+	}
+	else if (TimeSinceEnemyHealthBarVisible >= SetEnemyHealthBarInvisibleAfterSeconds)
+	{
+		SetEnemyHealthBarVisible(false);
+	}
+}
+
+void AShooterSamCharacter::SetEnemyHealthBar()
+{
+	if (!PlayerController)
+	{
+		EnemyHealthBarWidgetComponent = NewObject<UWidgetComponent>(this, UWidgetComponent::StaticClass());
+		EnemyHealthBarWidgetComponent->SetupAttachment(EnemyHealthBarLocation);
+	
+		EnemyHealthBarWidgetComponent->SetWidgetClass(EnemyHealthBarWidgetClass);
+		EnemyHealthBarWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
+		EnemyHealthBarWidgetComponent->SetVisibility(false);
+		EnemyHealthBarWidgetComponent->RegisterComponent();
+
+		if (UUserWidget* EnemyHealthBarWidgetInstance = EnemyHealthBarWidgetComponent->GetWidget())
+		{
+			EnemyHealthBarWidget = Cast<UEnemyHealthBar>(EnemyHealthBarWidgetInstance);
+		}
 	}
 }
 
@@ -192,25 +231,6 @@ void AShooterSamCharacter::Shoot()
 	Gun->PullTrigger();
 }
 
-int32 AShooterSamCharacter::GetLevelInfoFromExperience(float CurrentExperienceAmount, float &ExperienceNeededForCalculatedLevel, float &MaxExperienceCurrentLevel) const
-{
-	int32 CalculatedLevel = 0;
-	ExperienceNeededForCalculatedLevel = 0.0f;
-	MaxExperienceCurrentLevel = 0.0f;
-	while (true)
-	{
-		MaxExperienceCurrentLevel = BaseExperienceNeededForLevelUp * FMath::Pow(1.2f, CalculatedLevel);
-		
-		if (CurrentExperienceAmount < ExperienceNeededForCalculatedLevel + MaxExperienceCurrentLevel)
-		{
-			break;
-		}
-		ExperienceNeededForCalculatedLevel += MaxExperienceCurrentLevel;
-		CalculatedLevel++;
-	}
-	return CalculatedLevel + 1;
-}
-
 void AShooterSamCharacter::SetLevel(int32 NewLevel)
 {
 	Level = NewLevel;
@@ -233,13 +253,16 @@ void AShooterSamCharacter::SetDamage()
 
 void AShooterSamCharacter::SetExperience(float ExperienceAmount)
 {
-	float ExperienceNeededForCalculatedLevel;
-	float MaxExperienceCurrentLevel;
-	int32 NewLevel = GetLevelInfoFromExperience(ExperienceAmount, ExperienceNeededForCalculatedLevel, MaxExperienceCurrentLevel);
-	SetLevel(NewLevel);
-	if (PlayerController)
+	if (GameMode)
 	{
-		PlayerController->HUDWidget->SetExperienceBar(Level, ExperienceAmount - ExperienceNeededForCalculatedLevel, MaxExperienceCurrentLevel);
+		float ExperienceNeededForCalculatedLevel;
+		float MaxExperienceCurrentLevel;
+		int32 NewLevel = GameMode->GetLevelInfoFromExperience(ExperienceAmount, ExperienceNeededForCalculatedLevel, MaxExperienceCurrentLevel);
+		SetLevel(NewLevel);
+		if (PlayerController)
+		{
+			PlayerController->HUDWidget->SetExperienceBar(Level, ExperienceAmount - ExperienceNeededForCalculatedLevel, MaxExperienceCurrentLevel);
+		}
 	}
 }
 
@@ -254,6 +277,26 @@ void AShooterSamCharacter::UpdateHudHealth()
 	if (PlayerController)
 	{
 		PlayerController->HUDWidget->SetHealthBar(Health, MaxHealth);
+	}
+	else
+	{
+		EnemyHealthBarWidget->SetHealthBar(Health, MaxHealth);
+	}
+}
+
+void AShooterSamCharacter::SetEnemyHealthBarVisible(bool IsVisible)
+{
+	if (!PlayerController)
+	{
+		if (!IsVisible)
+		{
+			TimeSinceEnemyHealthBarVisible = SetEnemyHealthBarInvisibleAfterSeconds;
+		}
+		else
+		{
+			TimeSinceEnemyHealthBarVisible = 0.0f;
+		}
+		EnemyHealthBarWidgetComponent->SetVisibility(IsVisible);
 	}
 }
 
@@ -287,11 +330,14 @@ void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, con
 {
 	if (DamagedActor->GetActorNameOrLabel() == InstigatedBy->GetActorNameOrLabel() | !IsAlive) return;
 
+	bool HealthBarVisibility = true;
+
 	Health -= Damage;
 
 	if (Health <= 0)
 	{
 		AShooterSamCharacter* InstigatorCharacter = Cast<AShooterSamCharacter>(InstigatedBy->GetPawn());
+		HealthBarVisibility = false;
 		if (InstigatorCharacter)
 		{
 			InstigatorCharacter->GainExperience(CurrentExperience / 5.0f);
@@ -308,5 +354,6 @@ void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, con
 
 		DetachFromControllerPendingDestroy();
 	}
+	SetEnemyHealthBarVisible(HealthBarVisibility);
 	UpdateHudHealth();
 }

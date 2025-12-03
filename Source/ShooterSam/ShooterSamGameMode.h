@@ -24,6 +24,15 @@ protected:
 
 	TArray<AEnemySpawner*> CombatEnemySpawners;
 
+	UPROPERTY(EditAnywhere)
+	float BaseExperienceNeededForLevelUp = 100.0f;
+
+	UPROPERTY(EditAnywhere)
+	float XPMultiplierForNextLevel = 1.2f;
+
+	UPROPERTY(EditAnywhere)
+	float AIExperienceGainedMultiplier = 1.05f;
+
 	int32 InGameTime = 0;
 
 	UPROPERTY(VisibleAnywhere)
@@ -39,6 +48,10 @@ protected:
 
 public:
 	AShooterSamGameMode();
+
+	float GetSpawnedAIExperience();
+	
+	int32 GetLevelInfoFromExperience(float CurrentExperienceAmount, float &ExperienceNeededForCalculatedLevel, float &MaxExperienceCurrentLevel) const;
 
 	void CharacterDied(AShooterSamCharacter* Character);
 
