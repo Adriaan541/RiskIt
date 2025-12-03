@@ -3,6 +3,7 @@
 #include "ShooterSamGameMode.h"
 
 #include "ShooterSamCharacter.h"
+#include "ShooterSamPlayerController.h"
 #include "EnemyAI/EnemySpawner.h"
 #include "EnemyAI/ShooterAI.h"
 #include "Kismet/GameplayStatics.h"
@@ -19,8 +20,14 @@ void AShooterSamGameMode::BeginPlay()
 
 	Player = Cast<AShooterSamCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
 
+	if (Player)
+	{
+		Player->GameMode = this;
+	}
+
 	TArray<AShooterAI*> ShooterAIControllers;
 
+	// TODO: Remove when all actors are spawned using enemySpawners
 	TArray<AActor*> EnemyActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AShooterAI::StaticClass(), EnemyActors);
 
@@ -70,6 +77,13 @@ void AShooterSamGameMode::Tick(float DeltaTime)
 		SpawnEnemyWave();
 		TimeSinceLastSpawnWave = 0;
 	}
+	int32 NewInGameTime = UGameplayStatics::GetTimeSeconds(GetWorld());
+
+	if (Player && Player->PlayerController && Player->PlayerController->HUDWidget && NewInGameTime != InGameTime)
+	{
+		Player->PlayerController->HUDWidget->SetInGameTimeText(NewInGameTime);
+	}
+	InGameTime = NewInGameTime;
 }
 
 void AShooterSamGameMode::SpawnEnemyWave()
@@ -93,13 +107,15 @@ void AShooterSamGameMode::SpawnEnemy(AEnemySpawner* EnemySpawner)
 	}
 }
 
-void AShooterSamGameMode::EnemyDied(AShooterSamCharacter* Enemy)
+void AShooterSamGameMode::CharacterDied(AShooterSamCharacter* Character)
 {
+	if (Character == Player) return;
 	for (AShooterAI* ShooterAI : ShooterAIActors)
 	{
-		if (Enemy == ShooterAI->ThisCharacter && ShooterAI->Spawner)
+		if (Character == ShooterAI->ThisCharacter && ShooterAI->Spawner)
 		{
 			ShooterAI->Spawner->EnemyDied();
+			break;
 		}
 	}
 }

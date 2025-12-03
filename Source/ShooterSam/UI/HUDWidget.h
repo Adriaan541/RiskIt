@@ -24,23 +24,33 @@ class SHOOTERSAM_API UHUDWidget : public UUserWidget
 
 public:
 	UPROPERTY(EditAnywhere, meta = (BindWidgetOptional))
-	UProgressBar* HealthBar;
-
-	UPROPERTY(EditAnywhere, meta = (BindWidgetOptional))
-	UTextBlock* HealthText;
+	UHorizontalBox* ItemBar;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidgetOptional))
 	UProgressBar* ExperienceBar;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidgetOptional))
 	UTextBlock* CurrentLevelText;
+	
+	UPROPERTY(EditAnywhere, meta = (BindWidgetOptional))
+	UProgressBar* HealthBar;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidgetOptional))
-	UHorizontalBox* ItemBar;
+	UTextBlock* HealthText;
+	
+	UPROPERTY(EditAnywhere, meta = (BindWidgetOptional))
+	UTextBlock* EnemyLevelText;
 
-	void SetHealthBar(float CurrentHealth, float MaxHealth);
+	UPROPERTY(EditAnywhere, meta = (BindWidgetOptional))
+	UTextBlock* GameTimerText;
+	
+	void UpdateItemBar(TArray<FItem> Items);
 
 	void SetExperienceBar(int32 CurrentLevel, float CurrentExperience, float MaxExperience);
 
-	void UpdateItemBar(TArray<FItem> Items);
+	void SetHealthBar(float CurrentHealth, float MaxHealth);
+
+	void SetAILevelText(int32 Level);
+
+	void SetInGameTimeText(int32 TimeSeconds);
 };

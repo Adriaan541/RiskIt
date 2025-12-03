@@ -301,7 +301,7 @@ void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, con
 		IsAlive = false;
 		if (GameMode)
 		{
-			GameMode->EnemyDied(this);
+			GameMode->CharacterDied(this);
 		}
 		
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);

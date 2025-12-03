@@ -24,6 +24,8 @@ protected:
 
 	TArray<AEnemySpawner*> CombatEnemySpawners;
 
+	int32 InGameTime = 0;
+
 	UPROPERTY(VisibleAnywhere)
 	float TimeSinceLastSpawnWave;
 	
@@ -38,7 +40,7 @@ protected:
 public:
 	AShooterSamGameMode();
 
-	void EnemyDied(AShooterSamCharacter* Enemy);
+	void CharacterDied(AShooterSamCharacter* Character);
 
 	UPROPERTY(EditAnywhere)
 	float SpawnWaveIntervalSeconds = 60.0f;
