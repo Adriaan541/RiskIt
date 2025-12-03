@@ -30,9 +30,17 @@ public:
 	UTextBlock* HealthText;
 
 	UPROPERTY(EditAnywhere, meta = (BindWidgetOptional))
+	UProgressBar* ExperienceBar;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidgetOptional))
+	UTextBlock* CurrentLevelText;
+
+	UPROPERTY(EditAnywhere, meta = (BindWidgetOptional))
 	UHorizontalBox* ItemBar;
 
 	void SetHealthBar(float CurrentHealth, float MaxHealth);
+
+	void SetExperienceBar(int32 CurrentLevel, float CurrentExperience, float MaxExperience);
 
 	void UpdateItemBar(TArray<FItem> Items);
 };

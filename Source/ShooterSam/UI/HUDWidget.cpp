@@ -31,6 +31,28 @@ void UHUDWidget::SetHealthBar(float CurrentHealth, float MaxHealth)
 	HealthText->SetText(HealthTextString);
 }
 
+void UHUDWidget::SetExperienceBar(int32 CurrentLevel, float CurrentExperience, float MaxExperience)
+{
+	float ExperienceDecimal;
+	FText CurrentLevelTextString;
+
+	if (CurrentExperience > MaxExperience)
+	{
+		ExperienceDecimal = 1.0f;
+	}
+	else if (CurrentExperience <= 0.0f)
+	{
+		ExperienceDecimal = 0.0f;
+	}
+	else
+	{
+		ExperienceDecimal = CurrentExperience / MaxExperience;
+	}
+
+	ExperienceBar->SetPercent(ExperienceDecimal);
+	CurrentLevelText->SetText(FText::FromString(FString::Printf(TEXT("Level %i"), CurrentLevel)));
+}
+
 void UHUDWidget::UpdateItemBar(TArray<FItem> Items)
 {
 	for (FItem Item : Items)
