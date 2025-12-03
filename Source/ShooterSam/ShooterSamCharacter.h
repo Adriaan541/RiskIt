@@ -94,6 +94,12 @@ public:
 
 	int32 GetLevelInfoFromExperience(float CurrentExperienceAmount, float &ExperienceNeededForCalculatedLevel, float &MaxExperienceCurrentLevel) const;
 
+	void SetLevel(int32 NewLevel);
+
+	void SetMaxHealth();
+
+	void SetDamage();
+
 	void SetExperience(float ExperienceAmount);
 
 	void GainExperience(float ExperienceAmount);

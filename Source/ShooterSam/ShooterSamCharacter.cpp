@@ -88,8 +88,6 @@ void AShooterSamCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Health = MaxHealth;
-
 	OnTakeAnyDamage.AddDynamic(this, &AShooterSamCharacter::OnDamageTaken);
 
 	GetMesh()->HideBoneByName("weapon_r", PBO_None);
@@ -104,8 +102,10 @@ void AShooterSamCharacter::BeginPlay()
 	}
 
 	PlayerController = Cast<AShooterSamPlayerController>(GetController());
-	UpdateHudHealth();
 	SetExperience(CurrentExperience);
+	Health = MaxHealth;
+	
+	UpdateHudHealth();
 }
 
 void AShooterSamCharacter::Tick(float DeltaTime)
@@ -211,11 +211,32 @@ int32 AShooterSamCharacter::GetLevelInfoFromExperience(float CurrentExperienceAm
 	return CalculatedLevel + 1;
 }
 
+void AShooterSamCharacter::SetLevel(int32 NewLevel)
+{
+	Level = NewLevel;
+	SetMaxHealth();
+	SetDamage();
+}
+
+void AShooterSamCharacter::SetMaxHealth()
+{
+	MaxHealth = BaseHealth * FMath::Pow(1.2f, Level - 1);
+}
+
+void AShooterSamCharacter::SetDamage()
+{
+	if (Gun)
+	{
+		Gun->BulletDamage = Gun->BaseBulletDamage * FMath::Pow(1.2f, Level - 1);
+	}
+}
+
 void AShooterSamCharacter::SetExperience(float ExperienceAmount)
 {
 	float ExperienceNeededForCalculatedLevel;
 	float MaxExperienceCurrentLevel;
-	Level = GetLevelInfoFromExperience(ExperienceAmount, ExperienceNeededForCalculatedLevel, MaxExperienceCurrentLevel);
+	int32 NewLevel = GetLevelInfoFromExperience(ExperienceAmount, ExperienceNeededForCalculatedLevel, MaxExperienceCurrentLevel);
+	SetLevel(NewLevel);
 	if (PlayerController)
 	{
 		PlayerController->HUDWidget->SetExperienceBar(Level, ExperienceAmount - ExperienceNeededForCalculatedLevel, MaxExperienceCurrentLevel);
@@ -238,7 +259,10 @@ void AShooterSamCharacter::UpdateHudHealth()
 
 void AShooterSamCharacter::DestroyCharacter()
 {
-	Gun->Destroy();
+	if (Gun)
+	{
+		Gun->Destroy();
+	}
 	Destroy();
 }
 
