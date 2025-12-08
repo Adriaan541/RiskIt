@@ -61,6 +61,9 @@ AShooterSamCharacter::AShooterSamCharacter()
 	
 	EnemyHealthBarLocation = CreateDefaultSubobject<USceneComponent>(TEXT("EnemyHealthBarLocation"));
 	EnemyHealthBarLocation->SetupAttachment(RootComponent);
+
+	EnemyHealthBarWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("EnemyHealthBar"));
+	EnemyHealthBarWidgetComponent->SetupAttachment(EnemyHealthBarLocation);
 }
 
 void AShooterSamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -142,13 +145,9 @@ void AShooterSamCharacter::SetEnemyHealthBar()
 {
 	if (!PlayerController)
 	{
-		EnemyHealthBarWidgetComponent = NewObject<UWidgetComponent>(this, UWidgetComponent::StaticClass());
-		EnemyHealthBarWidgetComponent->SetupAttachment(EnemyHealthBarLocation);
-	
 		EnemyHealthBarWidgetComponent->SetWidgetClass(EnemyHealthBarWidgetClass);
 		EnemyHealthBarWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
 		EnemyHealthBarWidgetComponent->SetVisibility(false);
-		EnemyHealthBarWidgetComponent->RegisterComponent();
 
 		if (UUserWidget* EnemyHealthBarWidgetInstance = EnemyHealthBarWidgetComponent->GetWidget())
 		{
