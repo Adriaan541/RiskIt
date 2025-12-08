@@ -33,7 +33,11 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float AIExperienceGainedMultiplier = 1.05f;
 
-	int32 InGameTime = 0;
+	int32 InGameTime = -1;
+
+	float AIExperienceNeededForLevelUp = -1;
+
+	int32 CurrentAILevel = -1;
 
 	UPROPERTY(VisibleAnywhere)
 	float TimeSinceLastSpawnWave;
@@ -41,6 +45,8 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaTime) override;
+
+	void UpdatePlayerHUD();
 
 	void SpawnEnemyWave();
 
@@ -56,7 +62,7 @@ public:
 	void CharacterDied(AShooterSamCharacter* Character);
 
 	UPROPERTY(EditAnywhere)
-	float SpawnWaveIntervalSeconds = 60.0f;
+	float SpawnWaveIntervalSeconds = 15.0f;
 };
 
 
