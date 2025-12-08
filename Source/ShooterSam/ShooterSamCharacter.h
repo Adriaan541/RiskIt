@@ -9,6 +9,8 @@
 #include "Logging/LogMacros.h"
 #include "ShooterSamCharacter.generated.h"
 
+class UWidgetComponent;
+class UEnemyHealthBar;
 class AShooterSamGameMode;
 class AItemDrop;
 class USpringArmComponent;
@@ -63,11 +65,13 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
+	void SetEnemyHealthBar();
+	
 	void Move(const FInputActionValue& Value);
 
 	void Look(const FInputActionValue& Value);
 
-	void SpawnItemDrop();
+	void SpawnItemDrop() const;
 	
 	virtual void BeginPlay() override;
 
@@ -91,9 +95,30 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Input")
 	virtual void Shoot();
+
+	void SetLevel(int32 NewLevel);
+
+	void SetMaxHealth();
+
+	void SetDamage();
+
+	void SetExperience(float ExperienceAmount);
+
+	void GainExperience(float ExperienceAmount);
 	
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AGun> GunClass;
+
+	UPROPERTY(EditAnywhere)
+	float BaseExperienceNeededForLevelUp = 100.0f;
+
+	UPROPERTY(VisibleAnywhere)
+	float CurrentExperience;
+
+	int32 Level = 1;
+	
+	UPROPERTY(EditAnywhere)
+	float BaseHealth = 100.0f;
 
 	UPROPERTY(EditAnywhere)
 	float MaxHealth = 100.0f;
@@ -111,6 +136,10 @@ public:
 protected:
 	float TimeSinceLastShot;
 
+	UWidgetComponent* EnemyHealthBarWidgetComponent;
+
+	float TimeSinceEnemyHealthBarVisible = 0.0f;
+
 public:
 	
 	UPROPERTY(EditAnywhere)
@@ -119,11 +148,25 @@ public:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AItemDrop> ItemDropClass;
 
+	UPROPERTY(VisibleAnywhere)
+	USceneComponent* EnemyHealthBarLocation;
+	
+	UPROPERTY(EditAnywhere)
+	UEnemyHealthBar* EnemyHealthBarWidget;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> EnemyHealthBarWidgetClass;
+
+	UPROPERTY(EditAnywhere)
+	float SetEnemyHealthBarInvisibleAfterSeconds = 5.0f;
+
 	AShooterSamPlayerController* PlayerController;
 
 	AShooterSamGameMode* GameMode;
 
 	void UpdateHudHealth();
+
+	void SetEnemyHealthBarVisible(bool IsVisible);
 
 	void DestroyCharacter();
 	

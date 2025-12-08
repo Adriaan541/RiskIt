@@ -46,9 +46,12 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	UNiagaraComponent* MuzzleFlashParticleSystem;
-	
+
 	UPROPERTY(EditAnywhere)
-	float BulletDamage = 10.0f;
+	float BaseBulletDamage = 10.0f;
+	
+	UPROPERTY(VisibleAnywhere)
+	float BulletDamage;
 
 	UPROPERTY(EditAnywhere)
 	USoundBase* ShootSound;

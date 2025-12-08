@@ -31,6 +31,8 @@ void AGun::BeginPlay()
 	Super::BeginPlay();
 
 	MuzzleFlashParticleSystem->Deactivate();
+
+	BulletDamage = BaseBulletDamage;
 }
 
 // Called every frame

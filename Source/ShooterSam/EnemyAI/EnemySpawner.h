@@ -43,7 +43,7 @@ public:
 
 	void EnemyDied();
 
-	AShooterAI* SpawnEnemy(AShooterSamCharacter* Player);
+	AShooterAI* SpawnEnemy(AShooterSamCharacter* Player, float EnemyExperience);
 
 	void DestroyEnemy(AShooterAI* Enemy);
 };

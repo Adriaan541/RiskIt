@@ -24,6 +24,21 @@ protected:
 
 	TArray<AEnemySpawner*> CombatEnemySpawners;
 
+	UPROPERTY(EditAnywhere)
+	float BaseExperienceNeededForLevelUp = 100.0f;
+
+	UPROPERTY(EditAnywhere)
+	float XPMultiplierForNextLevel = 1.2f;
+
+	UPROPERTY(EditAnywhere)
+	float AIExperienceGainedMultiplier = 1.05f;
+
+	int32 InGameTime = -1;
+
+	float AIExperienceNeededForLevelUp = -1;
+
+	int32 CurrentAILevel = -1;
+
 	UPROPERTY(VisibleAnywhere)
 	float TimeSinceLastSpawnWave;
 	
@@ -31,19 +46,23 @@ protected:
 
 	virtual void Tick(float DeltaTime) override;
 
+	void UpdatePlayerHUD();
+
 	void SpawnEnemyWave();
 
 	void SpawnEnemy(AEnemySpawner* EnemySpawner);
 
-	
-
 public:
 	AShooterSamGameMode();
 
-	void EnemyDied(AShooterSamCharacter* Enemy);
+	float GetSpawnedAIExperience();
+	
+	int32 GetLevelInfoFromExperience(float CurrentExperienceAmount, float &ExperienceNeededForCalculatedLevel, float &MaxExperienceCurrentLevel) const;
+
+	void CharacterDied(AShooterSamCharacter* Character);
 
 	UPROPERTY(EditAnywhere)
-	float SpawnWaveIntervalSeconds = 60.0f;
+	float SpawnWaveIntervalSeconds = 15.0f;
 };
 
 

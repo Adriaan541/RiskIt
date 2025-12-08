@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "ShooterSamCharacter.h"
+
+#include "UI/EnemyHealthBar.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -13,8 +15,10 @@
 #include "ShooterSam.h"
 #include "ShooterSamGameMode.h"
 #include "ShooterSamPlayerController.h"
+#include "Components/WidgetComponent.h"
 #include "Items/itemDrop.h"
 #include "Kismet/GameplayStatics.h"
+#include "UI/EnemyHealthBar.h"
 
 AShooterSamCharacter::AShooterSamCharacter()
 {
@@ -54,6 +58,12 @@ AShooterSamCharacter::AShooterSamCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
 	ItemManager = CreateDefaultSubobject<UItemManager>(TEXT("ItemManager"));
+	
+	EnemyHealthBarLocation = CreateDefaultSubobject<USceneComponent>(TEXT("EnemyHealthBarLocation"));
+	EnemyHealthBarLocation->SetupAttachment(RootComponent);
+
+	EnemyHealthBarWidgetComponent = CreateDefaultSubobject<UWidgetComponent>(TEXT("EnemyHealthBar"));
+	EnemyHealthBarWidgetComponent->SetupAttachment(EnemyHealthBarLocation);
 }
 
 void AShooterSamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -84,12 +94,11 @@ void AShooterSamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 	}
 }
 
+
+
 void AShooterSamCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	Health = MaxHealth;
-	UpdateHudHealth();
 
 	OnTakeAnyDamage.AddDynamic(this, &AShooterSamCharacter::OnDamageTaken);
 
@@ -105,6 +114,13 @@ void AShooterSamCharacter::BeginPlay()
 	}
 
 	PlayerController = Cast<AShooterSamPlayerController>(GetController());
+	SetExperience(CurrentExperience);
+
+	SetEnemyHealthBar();
+	
+	Health = MaxHealth;
+	
+	UpdateHudHealth();
 }
 
 void AShooterSamCharacter::Tick(float DeltaTime)
@@ -114,6 +130,29 @@ void AShooterSamCharacter::Tick(float DeltaTime)
 	if (TimeSinceLastShot < ShotIntervalSeconds)
 	{
 		TimeSinceLastShot += DeltaTime;
+	}
+	if (TimeSinceEnemyHealthBarVisible < SetEnemyHealthBarInvisibleAfterSeconds)
+	{
+		TimeSinceEnemyHealthBarVisible += DeltaTime;
+	}
+	else if (TimeSinceEnemyHealthBarVisible >= SetEnemyHealthBarInvisibleAfterSeconds)
+	{
+		SetEnemyHealthBarVisible(false);
+	}
+}
+
+void AShooterSamCharacter::SetEnemyHealthBar()
+{
+	if (!PlayerController)
+	{
+		EnemyHealthBarWidgetComponent->SetWidgetClass(EnemyHealthBarWidgetClass);
+		EnemyHealthBarWidgetComponent->SetWidgetSpace(EWidgetSpace::Screen);
+		EnemyHealthBarWidgetComponent->SetVisibility(false);
+
+		if (UUserWidget* EnemyHealthBarWidgetInstance = EnemyHealthBarWidgetComponent->GetWidget())
+		{
+			EnemyHealthBarWidget = Cast<UEnemyHealthBar>(EnemyHealthBarWidgetInstance);
+		}
 	}
 }
 
@@ -134,23 +173,6 @@ void AShooterSamCharacter::Look(const FInputActionValue& Value)
 	// route the input
 	DoLook(LookAxisVector.X, LookAxisVector.Y);
 }
-
-void AShooterSamCharacter::SpawnItemDrop()
-{
-	FTransform SpawnTransform(FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z - 90.0f));
-	AItemDrop* ItemDrop = GetWorld()->SpawnActorDeferred<AItemDrop>(ItemDropClass, SpawnTransform);
-
-	if (ItemDrop && ItemManager)
-	{
-		FItem RandomItem = ItemManager->GetRandomItem();
-
-		ItemDrop->ItemName = RandomItem.ItemName;
-		ItemDrop->DropMaterial = RandomItem.ItemMaterial;
-
-		UGameplayStatics::FinishSpawningActor(ItemDrop, SpawnTransform);
-	}
-}
-
 
 void AShooterSamCharacter::DoMove(float Right, float Forward)
 {
@@ -208,18 +230,98 @@ void AShooterSamCharacter::Shoot()
 	Gun->PullTrigger();
 }
 
+void AShooterSamCharacter::SetLevel(int32 NewLevel)
+{
+	Level = NewLevel;
+	SetMaxHealth();
+	SetDamage();
+}
+
+void AShooterSamCharacter::SetMaxHealth()
+{
+	MaxHealth = BaseHealth * FMath::Pow(1.2f, Level - 1);
+}
+
+void AShooterSamCharacter::SetDamage()
+{
+	if (Gun)
+	{
+		Gun->BulletDamage = Gun->BaseBulletDamage * FMath::Pow(1.2f, Level - 1);
+	}
+}
+
+void AShooterSamCharacter::SetExperience(float ExperienceAmount)
+{
+	if (GameMode)
+	{
+		float ExperienceNeededForCalculatedLevel;
+		float MaxExperienceCurrentLevel;
+		int32 NewLevel = GameMode->GetLevelInfoFromExperience(ExperienceAmount, ExperienceNeededForCalculatedLevel, MaxExperienceCurrentLevel);
+		SetLevel(NewLevel);
+		if (PlayerController)
+		{
+			PlayerController->HUDWidget->SetExperienceBar(Level, ExperienceAmount - ExperienceNeededForCalculatedLevel, MaxExperienceCurrentLevel);
+		}
+	}
+}
+
+void AShooterSamCharacter::GainExperience(float ExperienceAmount)
+{
+	CurrentExperience += ExperienceAmount;
+	SetExperience(CurrentExperience);
+}
+
 void AShooterSamCharacter::UpdateHudHealth()
 {
 	if (PlayerController)
 	{
 		PlayerController->HUDWidget->SetHealthBar(Health, MaxHealth);
 	}
+	else
+	{
+		EnemyHealthBarWidget->SetHealthBar(Health, MaxHealth);
+	}
+}
+
+void AShooterSamCharacter::SetEnemyHealthBarVisible(bool IsVisible)
+{
+	if (!PlayerController)
+	{
+		if (!IsVisible)
+		{
+			TimeSinceEnemyHealthBarVisible = SetEnemyHealthBarInvisibleAfterSeconds;
+		}
+		else
+		{
+			TimeSinceEnemyHealthBarVisible = 0.0f;
+		}
+		EnemyHealthBarWidgetComponent->SetVisibility(IsVisible);
+	}
 }
 
 void AShooterSamCharacter::DestroyCharacter()
 {
-	Gun->Destroy();
+	if (Gun)
+	{
+		Gun->Destroy();
+	}
 	Destroy();
+}
+
+void AShooterSamCharacter::SpawnItemDrop() const
+{
+	FTransform SpawnTransform(FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z - 90.0f));
+	AItemDrop* ItemDrop = GetWorld()->SpawnActorDeferred<AItemDrop>(ItemDropClass, SpawnTransform);
+
+	if (ItemDrop && ItemManager)
+	{
+		FItem RandomItem = ItemManager->GetRandomItem();
+
+		ItemDrop->ItemName = RandomItem.ItemName;
+		ItemDrop->DropMaterial = RandomItem.ItemMaterial;
+
+		UGameplayStatics::FinishSpawningActor(ItemDrop, SpawnTransform);
+	}
 }
 
 void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, const class UDamageType* DamageType,
@@ -227,21 +329,30 @@ void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, con
 {
 	if (DamagedActor->GetActorNameOrLabel() == InstigatedBy->GetActorNameOrLabel() | !IsAlive) return;
 
+	bool HealthBarVisibility = true;
+
 	Health -= Damage;
 
 	if (Health <= 0)
 	{
+		AShooterSamCharacter* InstigatorCharacter = Cast<AShooterSamCharacter>(InstigatedBy->GetPawn());
+		HealthBarVisibility = false;
+		if (InstigatorCharacter)
+		{
+			InstigatorCharacter->GainExperience(1.82f * FMath::Sqrt(CurrentExperience) + 20);
+		}
 		SpawnItemDrop();
 		Health = 0;
 		IsAlive = false;
 		if (GameMode)
 		{
-			GameMode->EnemyDied(this);
+			GameMode->CharacterDied(this);
 		}
-		
+				
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		DetachFromControllerPendingDestroy();
 	}
+	SetEnemyHealthBarVisible(HealthBarVisibility);
 	UpdateHudHealth();
 }

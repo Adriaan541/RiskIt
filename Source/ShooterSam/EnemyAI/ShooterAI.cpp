@@ -3,7 +3,9 @@
 
 #include "ShooterAI.h"
 
+#include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "Slate/SGameLayerManager.h"
 
 void AShooterAI::BeginPlay()
 {

@@ -41,18 +41,20 @@ int AEnemySpawner::GetNumberOfEnemies()
 void AEnemySpawner::EnemyDied()
 {
 	CanSpawnEnemy = true;
-	if (GetNumberOfEnemies() > 3)
+}
+
+AShooterAI* AEnemySpawner::SpawnEnemy(AShooterSamCharacter* Player, float EnemyExperience)
+{
+	if (GetNumberOfEnemies() >= 1)
 	{
 		DestroyEnemy(ShooterAIActors[0]);
 	}
-}
-
-AShooterAI* AEnemySpawner::SpawnEnemy(AShooterSamCharacter* Player)
-{
+	
 	FTransform SpawnTransform(FVector(SpawnCapsule->GetComponentLocation()));
 	AShooterSamCharacter* ShooterSamCharacter = GetWorld()->SpawnActorDeferred<AShooterSamCharacter>(
 		ShooterSamClass, SpawnTransform);
 
+	ShooterSamCharacter->CurrentExperience = EnemyExperience;
 	ShooterSamCharacter->AutoPossessAI = EAutoPossessAI::Spawned;
 	
 	UGameplayStatics::FinishSpawningActor(ShooterSamCharacter, SpawnTransform);
