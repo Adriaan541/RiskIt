@@ -339,7 +339,7 @@ void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, con
 		HealthBarVisibility = false;
 		if (InstigatorCharacter)
 		{
-			InstigatorCharacter->GainExperience(CurrentExperience / 5.0f);
+			InstigatorCharacter->GainExperience(1.82f * FMath::Sqrt(CurrentExperience) + 20);
 		}
 		SpawnItemDrop();
 		Health = 0;
@@ -348,7 +348,7 @@ void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, con
 		{
 			GameMode->CharacterDied(this);
 		}
-		
+				
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 		DetachFromControllerPendingDestroy();
