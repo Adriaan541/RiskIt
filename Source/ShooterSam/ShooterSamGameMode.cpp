@@ -91,16 +91,13 @@ void AShooterSamGameMode::UpdatePlayerHUD()
 	{
 		if (NewInGameTime != InGameTime)
 		{
-			UE_LOG(LogTemp, Display, TEXT("New Time"));
 			Player->PlayerController->HUDWidget->SetInGameTimeText(NewInGameTime);
 			int32 AIExperience = GetSpawnedAIExperience();
-			UE_LOG(LogTemp, Display, TEXT("AI experience: %i"), AIExperience);
 			if (AIExperience >= AIExperienceNeededForLevelUp)
 			{
 				float NeededForCalculatedLevel;
 				NewAILevel = GetLevelInfoFromExperience(AIExperience, NeededForCalculatedLevel, AIExperienceNeededForLevelUp);
 			}
-			UE_LOG(LogTemp, Display, TEXT("New AI Level: %i"), NewAILevel);
 		}
 		if (NewAILevel != CurrentAILevel)
 		{
