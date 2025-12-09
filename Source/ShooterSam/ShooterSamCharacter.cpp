@@ -349,7 +349,10 @@ void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, con
 			GameMode->CharacterDied(this);
 		}
 				
-		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		// GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		SetActorEnableCollision(false);
+		// GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		Gun->SetActorEnableCollision(false);
 
 		DetachFromControllerPendingDestroy();
 	}

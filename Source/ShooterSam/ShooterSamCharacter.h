@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Gun.h"
+#include "Gun/Gun.h"
 #include "Items/ItemManager.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
