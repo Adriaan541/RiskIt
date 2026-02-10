@@ -58,3 +58,12 @@ void AShooterAI::StartBehaviourTree(AShooterSamCharacter* Player)
 		}
 	}
 }
+
+void AShooterAI::AlertCharacter()
+{
+	if (UBlackboardComponent* BlackboardComponent = GetBlackboardComponent(); PlayerCharacter)
+	{
+		SetFocus(PlayerCharacter);
+		BlackboardComponent->SetValueAsVector("LastKnownPlayerLocation", PlayerCharacter->GetActorLocation());
+	}
+}

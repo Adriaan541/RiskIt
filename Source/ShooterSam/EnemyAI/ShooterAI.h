@@ -42,4 +42,6 @@ public:
 	AShooterSamCharacter* ThisCharacter;
 
 	void StartBehaviourTree(AShooterSamCharacter* Player);
+
+	void AlertCharacter();
 };

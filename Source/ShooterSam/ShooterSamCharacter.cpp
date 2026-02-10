@@ -16,9 +16,9 @@
 #include "ShooterSamGameMode.h"
 #include "ShooterSamPlayerController.h"
 #include "Components/WidgetComponent.h"
+#include "Gun/Gun.h"
 #include "Items/itemDrop.h"
 #include "Kismet/GameplayStatics.h"
-#include "UI/EnemyHealthBar.h"
 
 AShooterSamCharacter::AShooterSamCharacter()
 {
@@ -222,6 +222,10 @@ void AShooterSamCharacter::AutoShoot()
 	{
 		Shoot();
 		TimeSinceLastShot = 0.0f;
+		if (GameMode)
+		{
+			GameMode->AlertAllEnemies();
+		}
 	}
 }
 
@@ -308,6 +312,18 @@ void AShooterSamCharacter::DestroyCharacter()
 	Destroy();
 }
 
+void AShooterSamCharacter::UpdateItems()
+{
+	// if (ItemManager)
+	// {
+	// 	TMap<FName, FItem> ItemMap = ItemManager->GetItemsMap();
+	// 	if (ItemMap)
+	// 	{
+	// 		
+	// 	}
+	// }
+}
+
 void AShooterSamCharacter::SpawnItemDrop() const
 {
 	FTransform SpawnTransform(FVector(GetActorLocation().X, GetActorLocation().Y, GetActorLocation().Z - 90.0f));
@@ -348,10 +364,8 @@ void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, con
 		{
 			GameMode->CharacterDied(this);
 		}
-				
-		// GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		
 		SetActorEnableCollision(false);
-		// GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		Gun->SetActorEnableCollision(false);
 
 		DetachFromControllerPendingDestroy();

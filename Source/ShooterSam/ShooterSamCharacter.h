@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Gun/Gun.h"
 #include "Items/ItemManager.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "ShooterSamCharacter.generated.h"
 
+class AGun;
 class UWidgetComponent;
 class UEnemyHealthBar;
 class AShooterSamGameMode;
@@ -169,6 +169,8 @@ public:
 	void SetEnemyHealthBarVisible(bool IsVisible);
 
 	void DestroyCharacter();
+
+	void UpdateItems();
 	
 	UFUNCTION()
 	void OnDamageTaken(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
