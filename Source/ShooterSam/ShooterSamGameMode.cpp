@@ -49,8 +49,6 @@ void AShooterSamGameMode::BeginPlay()
 	{
 		AEnemySpawner* CombatEnemySpawner = Cast<AEnemySpawner>(EnemySpawner);
 		CombatEnemySpawners.Add(CombatEnemySpawner);
-
-		// SpawnEnemy(CombatEnemySpawner);
 	}
 
 	// if (ShooterAIActors.Num() > 0)
@@ -72,7 +70,7 @@ void AShooterSamGameMode::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	UpdatePlayerHUD();
-	
+
 	TimeSinceLastSpawnWave += DeltaTime;
 
 	if (TimeSinceLastSpawnWave > SpawnWaveIntervalSeconds)
@@ -96,7 +94,8 @@ void AShooterSamGameMode::UpdatePlayerHUD()
 			if (AIExperience >= AIExperienceNeededForLevelUp)
 			{
 				float NeededForCalculatedLevel;
-				NewAILevel = GetLevelInfoFromExperience(AIExperience, NeededForCalculatedLevel, AIExperienceNeededForLevelUp);
+				NewAILevel = GetLevelInfoFromExperience(AIExperience, NeededForCalculatedLevel,
+				                                        AIExperienceNeededForLevelUp);
 			}
 		}
 		if (NewAILevel != CurrentAILevel)
@@ -110,7 +109,8 @@ void AShooterSamGameMode::UpdatePlayerHUD()
 
 float AShooterSamGameMode::GetSpawnedAIExperience()
 {
-	return (BaseExperienceNeededForLevelUp * FMath::Pow(XPMultiplierForNextLevel, static_cast<float>(InGameTime) / 60)) - BaseExperienceNeededForLevelUp;
+	return (BaseExperienceNeededForLevelUp * FMath::Pow(XPMultiplierForNextLevel, static_cast<float>(InGameTime) / 60))
+		- BaseExperienceNeededForLevelUp;
 }
 
 /**
@@ -121,15 +121,17 @@ float AShooterSamGameMode::GetSpawnedAIExperience()
  * @return : The level the character has based on the CurrentExperienceAmount.
  */
 int32 AShooterSamGameMode::GetLevelInfoFromExperience(float CurrentExperienceAmount,
-                                                      float& ExperienceNeededForCalculatedLevel, float& MaxExperienceCurrentLevel) const
+                                                      float& ExperienceNeededForCalculatedLevel,
+                                                      float& MaxExperienceCurrentLevel) const
 {
 	int32 CalculatedLevel = 0;
 	ExperienceNeededForCalculatedLevel = 0.0f;
 	MaxExperienceCurrentLevel = 0.0f;
 	while (true)
 	{
-		MaxExperienceCurrentLevel = BaseExperienceNeededForLevelUp * FMath::Pow(XPMultiplierForNextLevel, CalculatedLevel);
-		
+		MaxExperienceCurrentLevel = BaseExperienceNeededForLevelUp * FMath::Pow(
+			XPMultiplierForNextLevel, CalculatedLevel);
+
 		if (CurrentExperienceAmount < ExperienceNeededForCalculatedLevel + MaxExperienceCurrentLevel)
 		{
 			break;
@@ -160,6 +162,13 @@ void AShooterSamGameMode::SpawnEnemy(AEnemySpawner* EnemySpawner)
 	{
 		Enemy->ThisCharacter->GameMode = this;
 		ShooterAIActors.Add(Enemy);
+
+		ShooterAIActors.RemoveAll(
+			[](AShooterAI* ShooterAI)
+			{
+				return !IsValid(ShooterAI);
+			}
+		);
 	}
 }
 
@@ -172,6 +181,45 @@ void AShooterSamGameMode::CharacterDied(AShooterSamCharacter* Character)
 		{
 			ShooterAI->Spawner->EnemyDied();
 			break;
+		}
+	}
+}
+
+TArray<TPair<double, AShooterSamCharacter*>> AShooterSamGameMode::GetClosestCharacters(
+	AShooterSamCharacter* ReferenceCharacter)
+{
+	TArray<TPair<double, AShooterSamCharacter*>> ClosestCharacters;
+
+	for (auto ShooterAI : ShooterAIActors)
+	{
+		AShooterSamCharacter* ShooterCharacter = ShooterAI->ThisCharacter;
+		if (!ShooterCharacter || ShooterCharacter == ReferenceCharacter || !ShooterCharacter->IsAlive) continue;
+
+		double Distance = (ShooterCharacter->GetActorLocation() - ReferenceCharacter->GetActorLocation()).Length();
+		ClosestCharacters.Emplace(Distance, ShooterCharacter);
+	}
+
+	ClosestCharacters.Sort();
+	return ClosestCharacters;
+}
+
+AShooterSamCharacter* AShooterSamGameMode::GetNextEnemyForProcChain(FProcChainData ProcChainData)
+{
+	for (auto NearestEnemy : GetClosestCharacters(ProcChainData.GetHitActor()))
+	{
+		if (!NearestEnemy.Value->IsAlive || ProcChainData.HitCharacters.Contains(NearestEnemy.Value)) continue;
+		return NearestEnemy.Value;
+	}
+	return nullptr;
+}
+
+void AShooterSamGameMode::AlertAllEnemies()
+{
+	for (auto ShooterAI : ShooterAIActors)
+	{
+		if (AShooterSamCharacter* ShooterCharacter = ShooterAI->ThisCharacter; ShooterCharacter->IsAlive)
+		{
+			ShooterAI->AlertCharacter();
 		}
 	}
 }

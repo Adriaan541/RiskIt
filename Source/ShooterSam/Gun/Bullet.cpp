@@ -12,13 +12,14 @@
 // Sets default values
 ABullet::ABullet()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	BulletMesh = CreateDefaultSubobject<UStaticMeshComponent>("BulletMesh");
 	SetRootComponent(BulletMesh);
 
-	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovementComponent"));
+	ProjectileMovementComponent = CreateDefaultSubobject<UProjectileMovementComponent>(
+		TEXT("ProjectileMovementComponent"));
 	ProjectileMovementComponent->InitialSpeed = 5000.0f;
 	ProjectileMovementComponent->MaxSpeed = 5000.0f;
 
@@ -38,27 +39,38 @@ void ABullet::BeginPlay()
 void ABullet::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
-void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+void ABullet::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+                    FVector NormalImpulse, const FHitResult& Hit)
 {
 	AActor* MyOwner = GetOwner();
 	AGun* OwnerGun = Cast<AGun>(MyOwner);
 	AActor* MyCharacter = MyOwner->GetOwner();
-	
+
 	if (MyOwner && OwnerGun && MyCharacter)
 	{
+		if (HitParticles)
+		{
+			UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HitParticles, GetActorLocation(),
+														   GetActorRotation());
+		}
+		if (HitSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, GetActorLocation());
+		}
+		
 		if (OtherActor && (OtherActor != MyOwner) && (OtherActor != MyCharacter) && (OtherActor != this))
 		{
-			UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerGun->OwnerController, this, UDamageType::StaticClass());
-			if (HitParticles)
+			UGameplayStatics::ApplyDamage(OtherActor, Damage, OwnerGun->OwnerController, this,
+			                              UDamageType::StaticClass());
+			
+			AShooterSamCharacter* OwnerShooterSamCharacter = Cast<AShooterSamCharacter>(MyCharacter);
+			AShooterSamCharacter* HitCharacter = Cast<AShooterSamCharacter>(OtherActor);
+			if (OwnerShooterSamCharacter && HitCharacter && OwnerShooterSamCharacter->ItemManager)
 			{
-				UNiagaraFunctionLibrary::SpawnSystemAtLocation(GetWorld(), HitParticles, GetActorLocation(), GetActorRotation());
-			}
-			if (HitSound)
-			{
-				UGameplayStatics::PlaySoundAtLocation(GetWorld(), HitSound, GetActorLocation());
+				FProcChainData ProcData = FProcChainData(OwnerGun, OwnerShooterSamCharacter, HitCharacter, Damage);
+				OwnerShooterSamCharacter->ItemManager->OnHitProcChain(&ProcData);
 			}
 		}
 	}

@@ -3,24 +3,25 @@
 
 #include "ItemManager.h"
 
+#include "LightningZap.h"
 #include "ShooterSamPlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
 
 UItemManager::UItemManager()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	
 }
 
 void UItemManager::BeginPlay()
 {
 	Super::BeginPlay();
+	UpdateItems();
 }
 
 void UItemManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	
 }
 
 void UItemManager::Init(UHUDWidget* HUDWidgetReference)
@@ -37,7 +38,8 @@ void UItemManager::CreateItemBoxWidget(FItem& Item)
 {
 	if (HUDWidget)
 	{
-		UItemBox* ItemBoxWidget = CreateWidget<UItemBox>(HUDWidget, ItemWidgetClass, WidgetNameFromItemName(Item.ItemName));
+		UItemBox* ItemBoxWidget = CreateWidget<UItemBox>(HUDWidget, ItemWidgetClass,
+		                                                 WidgetNameFromItemName(Item.ItemName));
 		if (ItemBoxWidget)
 		{
 			Item.ItemBox = ItemBoxWidget;
@@ -54,11 +56,22 @@ void UItemManager::UpdateItemBoxWidget(FItem& Item)
 	}
 }
 
+void UItemManager::UpdateItemMap()
+{
+	TMap<FName, int> NewItemMap;
+	for (auto item : Items)
+	{
+		NewItemMap.Add(item.ItemName, item.Amount);
+	}
+	ItemMap = NewItemMap;
+}
+
 void UItemManager::CreateWidgets()
 {
 	for (FItem& Item : Items)
 	{
-		UItemBox* ItemBoxWidget = CreateWidget<UItemBox>(HUDWidget, *ItemWidgetClass, WidgetNameFromItemName(Item.ItemName));
+		UItemBox* ItemBoxWidget = CreateWidget<UItemBox>(HUDWidget, *ItemWidgetClass,
+		                                                 WidgetNameFromItemName(Item.ItemName));
 		if (ItemBoxWidget)
 		{
 			Item.ItemBox = ItemBoxWidget;
@@ -72,8 +85,10 @@ FName UItemManager::WidgetNameFromItemName(FName ItemName)
 	return FName(ItemName.ToString() + TEXT("Widget"));
 }
 
-void UItemManager::UpdateItemBar()
+void UItemManager::UpdateItems()
 {
+	UpdateItemMap();
+
 	if (HUDWidget)
 	{
 		HUDWidget->UpdateItemBar(GetItems());
@@ -83,6 +98,16 @@ void UItemManager::UpdateItemBar()
 TArray<FItem> UItemManager::GetItems()
 {
 	return Items;
+}
+
+FItem* UItemManager::GetItem(FName ItemName)
+{
+	for (FItem& Item : Items)
+	{
+		if (Item.ItemName == ItemName)
+			return &Item;
+	}
+	return nullptr;
 }
 
 FItem UItemManager::GetRandomItem()
@@ -101,7 +126,7 @@ void UItemManager::AddItem(FName ItemName)
 			break;
 		}
 	}
-	UpdateItemBar();
+	UpdateItems();
 }
 
 void UItemManager::DeductItem(FString ItemName)
@@ -115,7 +140,7 @@ void UItemManager::DeductItem(FString ItemName)
 			break;
 		}
 	}
-	UpdateItemBar();
+	UpdateItems();
 }
 
 void UItemManager::SetItem(FString ItemName, int32 Amount)
@@ -129,7 +154,7 @@ void UItemManager::SetItem(FString ItemName, int32 Amount)
 			break;
 		}
 	}
-	UpdateItemBar();
+	UpdateItems();
 }
 
 void UItemManager::RemoveItem(FString ItemName)
@@ -143,6 +168,31 @@ void UItemManager::RemoveItem(FString ItemName)
 			break;
 		}
 	}
-	UpdateItemBar();
+	UpdateItems();
 }
 
+void UItemManager::OnHitProcChain(FProcChainData* ProcChainData)
+{
+	if (ProcChainData->IsChain()) 
+			UE_LOG(LogTemp, Display, TEXT("Is procChain"));
+	if (ItemMap["LightningZap"] > 0)
+	{
+		if (rand() % 5 < 2 || ProcChainData->IsChain())
+		{
+			ExecuteLightningZap(FProcChainData(*ProcChainData), ItemMap["LightningZap"]);
+		}
+	}
+}
+
+void UItemManager::ExecuteLightningZap(FProcChainData ProcChainData, int AmountOfItem)
+{
+	FTransform SpawnTransform;
+	SpawnTransform.SetLocation(ProcChainData.GetHitActor()->GetActorLocation());
+	ALightningZap* LightningZap = GetWorld()->SpawnActorDeferred<ALightningZap>(LightningZapClass, SpawnTransform);
+
+	if (LightningZap)
+	{
+		LightningZap->InitLightningZap(ProcChainData, AmountOfItem);
+		UGameplayStatics::FinishSpawningActor(LightningZap, SpawnTransform);
+	}
+}

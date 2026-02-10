@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "Items/ItemManager.h"
 #include "ShooterSamGameMode.generated.h"
 
 class AEnemySpawner;
@@ -60,6 +61,12 @@ public:
 	int32 GetLevelInfoFromExperience(float CurrentExperienceAmount, float &ExperienceNeededForCalculatedLevel, float &MaxExperienceCurrentLevel) const;
 
 	void CharacterDied(AShooterSamCharacter* Character);
+
+	TArray<TPair<double, AShooterSamCharacter*>> GetClosestCharacters(AShooterSamCharacter* ReferenceCharacter);
+
+	AShooterSamCharacter* GetNextEnemyForProcChain(FProcChainData ProcChainData);
+
+	void AlertAllEnemies();
 
 	UPROPERTY(EditAnywhere)
 	float SpawnWaveIntervalSeconds = 15.0f;
