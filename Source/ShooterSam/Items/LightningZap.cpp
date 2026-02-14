@@ -52,9 +52,10 @@ void ALightningZap::Tick(float DeltaTime)
 
 	if (Timer < DamageExecutionTime)
 	{
-		const float AmountOfItemsDamageModifier = AmountOfItemsOnInstigator > 1 ? (AmountOfItemsOnInstigator - 1) * 1.25f : 1;
+		// every item adds 0.25 or 25% damage, with a base of 1
+		const float AmountOfItemsDamageModifier = AmountOfItemsOnInstigator > 1 ? (AmountOfItemsOnInstigator - 1) * 0.25f + 1 : 1;
 		const float Damage = DeltaTime * (1/DamageExecutionTime) * ProcChainData.BaseDamage * AmountOfItemsDamageModifier;
-		// const float Damage = DeltaTime * (1 / DamageExecutionTime) * ProcChainData.BaseDamage;
+		
 		if (!ProcChainData.IsNull())
 		{
 			UGameplayStatics::ApplyDamage(ProcChainData.GetHitActor(), Damage,
@@ -85,8 +86,6 @@ void ALightningZap::Tick(float DeltaTime)
 
 void ALightningZap::InitLightningZap(FProcChainData SetProcChainData, int AmountOfItem)
 {
-	// if (SetProcChainData.GetPreviousHit())
-	// 	BaseLocation->SetWorldLocation(SetProcChainData.GetPreviousHit()->GetActorLocation());
 	if (AShooterSamCharacter* PreviousHit = SetProcChainData.GetPreviousHit())
 		BaseLocation->SetWorldLocation(PreviousHit->GetActorLocation());
 	else
