@@ -7,6 +7,7 @@
 #include "ItemManager.generated.h"
 
 
+enum class EItemType : uint8;
 class AGun;
 class AShooterSamCharacter;
 class ALightningZap;
@@ -21,6 +22,8 @@ struct FItem
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EItemType ItemType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName ItemName;
 	UPROPERTY()
 	int32 Amount;
@@ -31,7 +34,7 @@ struct FItem
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterial* ItemMaterial;
 
-	FItem()
+	FItem(): ItemType()
 	{
 		ItemName = FName(NAME_None);
 		Amount = 0;
@@ -122,7 +125,7 @@ protected:
 
 	TArray<UUserWidget*> ItemWidgets;
 
-	TMap<FName, int> ItemMap;
+	TMap<EItemType, int> ItemMap;
 
 	FName WidgetNameFromItemName(FName ItemName);
 
@@ -144,9 +147,9 @@ public:
 
 	TArray<FItem> GetItems();
 	
-	FItem* GetItem(FName ItemName);
+	FItem* GetItem(EItemType ItemType);
 
-	TMap<FName, FItem> GetItemsMap();
+	TMap<EItemType, int> GetItemsMap();
 
 	FItem GetRandomItem();
 
@@ -154,11 +157,11 @@ public:
 
 	void CreateWidgets();
 
-	void AddItem(FName ItemName);
-	void DeductItem(FString ItemName);
+	void AddItem(EItemType ItemType);
+	void DeductItem(EItemType ItemType);
 
-	void SetItem(FString ItemName, int32 Amount);
-	void RemoveItem(FString ItemName);
+	void SetItem(EItemType ItemType, int32 Amount);
+	void RemoveItem(EItemType ItemType);
 
 	// void OnHitProcChain(AGun* Instigator, AShooterSamCharacter* OwnerShooterSamCharacter,
 	//                     AShooterSamCharacter* HitActor, float BaseDamage, AShooterSamCharacter* PreviousHit);

@@ -48,7 +48,7 @@ void AItemDrop::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Othe
 		{
 			if (UItemManager* CharacterItemManager = OtherCharacter->ItemManager)
 			{
-				CharacterItemManager->AddItem(ItemName);
+				CharacterItemManager->AddItem(ItemType);
 				OtherCharacter->UpdateItems();
 			}
 		}

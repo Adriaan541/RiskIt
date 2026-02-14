@@ -140,8 +140,14 @@ protected:
 
 	float TimeSinceEnemyHealthBarVisible = 0.0f;
 
+	float HealthRegenTimer;
+
+	UPROPERTY(EditAnywhere)
+	float BaseHealthRRegeneration = 2.0f;
+
+	void RegenHealth(float DeltaTime);
+
 public:
-	
 	UPROPERTY(EditAnywhere)
 	UItemManager* ItemManager;
 

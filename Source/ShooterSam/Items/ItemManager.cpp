@@ -3,6 +3,7 @@
 
 #include "ItemManager.h"
 
+#include "ItemType.h"
 #include "LightningZap.h"
 #include "ShooterSamPlayerController.h"
 #include "Kismet/GameplayStatics.h"
@@ -58,10 +59,10 @@ void UItemManager::UpdateItemBoxWidget(FItem& Item)
 
 void UItemManager::UpdateItemMap()
 {
-	TMap<FName, int> NewItemMap;
+	TMap<EItemType, int> NewItemMap;
 	for (auto item : Items)
 	{
-		NewItemMap.Add(item.ItemName, item.Amount);
+		NewItemMap.Add(item.ItemType, item.Amount);
 	}
 	ItemMap = NewItemMap;
 }
@@ -100,14 +101,19 @@ TArray<FItem> UItemManager::GetItems()
 	return Items;
 }
 
-FItem* UItemManager::GetItem(FName ItemName)
+FItem* UItemManager::GetItem(EItemType ItemType)
 {
 	for (FItem& Item : Items)
 	{
-		if (Item.ItemName == ItemName)
+		if (Item.ItemType == ItemType)
 			return &Item;
 	}
 	return nullptr;
+}
+
+TMap<EItemType, int> UItemManager::GetItemsMap()
+{
+	return ItemMap;
 }
 
 FItem UItemManager::GetRandomItem()
@@ -115,11 +121,11 @@ FItem UItemManager::GetRandomItem()
 	return Items[FMath::RandRange(0, Items.Num() - 1)];
 }
 
-void UItemManager::AddItem(FName ItemName)
+void UItemManager::AddItem(EItemType ItemType)
 {
 	for (FItem& Item : Items)
 	{
-		if (Item.ItemName == ItemName)
+		if (Item.ItemType == ItemType)
 		{
 			Item.Amount = Item.Amount + 1;
 			UpdateItemBoxWidget(Item);
@@ -129,11 +135,11 @@ void UItemManager::AddItem(FName ItemName)
 	UpdateItems();
 }
 
-void UItemManager::DeductItem(FString ItemName)
+void UItemManager::DeductItem(EItemType ItemType)
 {
 	for (FItem& Item : Items)
 	{
-		if (Item.ItemName == ItemName)
+		if (Item.ItemType == ItemType)
 		{
 			Item.Amount--;
 			UpdateItemBoxWidget(Item);
@@ -143,11 +149,11 @@ void UItemManager::DeductItem(FString ItemName)
 	UpdateItems();
 }
 
-void UItemManager::SetItem(FString ItemName, int32 Amount)
+void UItemManager::SetItem(EItemType ItemType, int32 Amount)
 {
 	for (FItem& Item : Items)
 	{
-		if (Item.ItemName == ItemName)
+		if (Item.ItemType == ItemType)
 		{
 			Item.Amount = Amount;
 			UpdateItemBoxWidget(Item);
@@ -157,11 +163,11 @@ void UItemManager::SetItem(FString ItemName, int32 Amount)
 	UpdateItems();
 }
 
-void UItemManager::RemoveItem(FString ItemName)
+void UItemManager::RemoveItem(EItemType ItemType)
 {
 	for (FItem& Item : Items)
 	{
-		if (Item.ItemName == ItemName)
+		if (Item.ItemType == ItemType)
 		{
 			Item.Amount = 0;
 			UpdateItemBoxWidget(Item);
@@ -175,11 +181,11 @@ void UItemManager::OnHitProcChain(FProcChainData* ProcChainData)
 {
 	if (ProcChainData->IsChain()) 
 			UE_LOG(LogTemp, Display, TEXT("Is procChain"));
-	if (ItemMap["LightningZap"] > 0)
+	if (ItemMap[EItemType::LightningZap] > 0)
 	{
 		if (rand() % 5 < 2 || ProcChainData->IsChain())
 		{
-			ExecuteLightningZap(FProcChainData(*ProcChainData), ItemMap["LightningZap"]);
+			ExecuteLightningZap(FProcChainData(*ProcChainData), ItemMap[EItemType::LightningZap]);
 		}
 	}
 }

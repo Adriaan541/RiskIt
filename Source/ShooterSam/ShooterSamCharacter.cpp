@@ -18,6 +18,7 @@
 #include "Components/WidgetComponent.h"
 #include "Gun/Gun.h"
 #include "Items/itemDrop.h"
+#include "Items/ItemType.h"
 #include "Kismet/GameplayStatics.h"
 
 AShooterSamCharacter::AShooterSamCharacter()
@@ -139,6 +140,8 @@ void AShooterSamCharacter::Tick(float DeltaTime)
 	{
 		SetEnemyHealthBarVisible(false);
 	}
+	
+	RegenHealth(DeltaTime);
 }
 
 void AShooterSamCharacter::SetEnemyHealthBar()
@@ -275,6 +278,25 @@ void AShooterSamCharacter::GainExperience(float ExperienceAmount)
 	SetExperience(CurrentExperience);
 }
 
+void AShooterSamCharacter::RegenHealth(float DeltaTime)
+{
+	HealthRegenTimer += DeltaTime;
+
+	if (HealthRegenTimer > 1.0f && Health < MaxHealth)
+	{
+		if (HealthRegenTimer > 2.0f) HealthRegenTimer = 1.0f;
+		else HealthRegenTimer -= 1.0f;
+
+		int HealthKitAmount = ItemManager->GetItemsMap()[EItemType::HealthKit];
+
+		float NewHealth = Health + HealthKitAmount + BaseHealthRRegeneration;
+		if (NewHealth > MaxHealth) Health = MaxHealth;
+		else Health = NewHealth;
+
+		UpdateHudHealth();
+	}
+}
+
 void AShooterSamCharacter::UpdateHudHealth()
 {
 	if (PlayerController)
@@ -333,7 +355,7 @@ void AShooterSamCharacter::SpawnItemDrop() const
 	{
 		FItem RandomItem = ItemManager->GetRandomItem();
 
-		ItemDrop->ItemName = RandomItem.ItemName;
+		ItemDrop->ItemType = RandomItem.ItemType;
 		ItemDrop->DropMaterial = RandomItem.ItemMaterial;
 
 		UGameplayStatics::FinishSpawningActor(ItemDrop, SpawnTransform);
