@@ -100,6 +100,8 @@ public:
 
 	void SetMaxHealth();
 
+	void CheckDamageItemUpdate();
+
 	void SetDamage();
 
 	void SetExperience(float ExperienceAmount);
@@ -131,22 +133,29 @@ public:
 	AGun* Gun;
 
 	UPROPERTY(EditAnywhere)
-	float ShotIntervalSeconds = 0.5f;
+	float BaseShotIntervalSeconds = 0.5f;
 
 protected:
-	float TimeSinceLastShot;
-
 	UWidgetComponent* EnemyHealthBarWidgetComponent;
 
 	float TimeSinceEnemyHealthBarVisible = 0.0f;
 
-	float HealthRegenTimer;
+	int CurrentDamageItems = 0;
 
 	UPROPERTY(EditAnywhere)
-	float BaseHealthRRegeneration = 2.0f;
-
+	float BaseHealthRegeneration = 2.0f;
+	float HealthRegenTimer;
 	void RegenHealth(float DeltaTime);
 
+	int CurrentMovementSpeedItems = 0;
+	float BaseMovementSpeed;
+	void UpdateMovementSpeed();
+
+	float ShotIntervalSeconds;
+	int32 CurrentFireRateItems = 0;
+	float TimeSinceLastShot;
+	void UpdateFireRate();
+	
 public:
 	UPROPERTY(EditAnywhere)
 	UItemManager* ItemManager;
@@ -175,8 +184,6 @@ public:
 	void SetEnemyHealthBarVisible(bool IsVisible);
 
 	void DestroyCharacter();
-
-	void UpdateItems();
 	
 	UFUNCTION()
 	void OnDamageTaken(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);

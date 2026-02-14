@@ -105,6 +105,10 @@ void AShooterSamCharacter::BeginPlay()
 
 	GetMesh()->HideBoneByName("weapon_r", PBO_None);
 
+	BaseMovementSpeed = GetCharacterMovement()->MaxWalkSpeed;
+
+	ShotIntervalSeconds = BaseShotIntervalSeconds;
+
 	Gun = GetWorld()->SpawnActor<AGun>(GunClass);
 	if (Gun)
 	{
@@ -128,7 +132,7 @@ void AShooterSamCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (TimeSinceLastShot < ShotIntervalSeconds)
+	if (TimeSinceLastShot < BaseShotIntervalSeconds)
 	{
 		TimeSinceLastShot += DeltaTime;
 	}
@@ -140,6 +144,12 @@ void AShooterSamCharacter::Tick(float DeltaTime)
 	{
 		SetEnemyHealthBarVisible(false);
 	}
+
+	UpdateMovementSpeed();
+
+	UpdateFireRate();
+
+	CheckDamageItemUpdate();
 	
 	RegenHealth(DeltaTime);
 }
@@ -249,11 +259,23 @@ void AShooterSamCharacter::SetMaxHealth()
 	MaxHealth = BaseHealth * FMath::Pow(1.2f, Level - 1);
 }
 
+void AShooterSamCharacter::CheckDamageItemUpdate()
+{
+	if (ItemManager && ItemManager->GetItemsMap()[EItemType::Damage] != CurrentDamageItems)
+	{
+		SetDamage();
+	}
+}
+
 void AShooterSamCharacter::SetDamage()
 {
-	if (Gun)
+	if (Gun && ItemManager)
 	{
-		Gun->BulletDamage = Gun->BaseBulletDamage * FMath::Pow(1.2f, Level - 1);
+		// Every Damage item (Ammo icon) adds 40% damage
+		int AmountOfDamageItem = ItemManager->GetItemsMap()[EItemType::Damage];
+		float DamageItemsModifier = 1 + (0.4 * AmountOfDamageItem);
+		
+		Gun->BulletDamage = Gun->BaseBulletDamage * FMath::Pow(1.2f, Level - 1) * DamageItemsModifier;
 	}
 }
 
@@ -282,18 +304,38 @@ void AShooterSamCharacter::RegenHealth(float DeltaTime)
 {
 	HealthRegenTimer += DeltaTime;
 
-	if (HealthRegenTimer > 1.0f && Health < MaxHealth)
+	if (ItemManager && HealthRegenTimer > 2.0f && Health < MaxHealth)
 	{
-		if (HealthRegenTimer > 2.0f) HealthRegenTimer = 1.0f;
-		else HealthRegenTimer -= 1.0f;
+		if (HealthRegenTimer > 4.0f) HealthRegenTimer = 2.0f;
+		else HealthRegenTimer -= 2.0f;
 
 		int HealthKitAmount = ItemManager->GetItemsMap()[EItemType::HealthKit];
 
-		float NewHealth = Health + HealthKitAmount + BaseHealthRRegeneration;
+		float NewHealth = Health + HealthKitAmount + BaseHealthRegeneration;
 		if (NewHealth > MaxHealth) Health = MaxHealth;
 		else Health = NewHealth;
 
 		UpdateHudHealth();
+	}
+}
+
+void AShooterSamCharacter::UpdateMovementSpeed()
+{
+	if (ItemManager && ItemManager->GetItemsMap()[EItemType::MovementSpeed] != CurrentMovementSpeedItems)
+	{
+		CurrentMovementSpeedItems = ItemManager->GetItemsMap()[EItemType::MovementSpeed];
+		
+		GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed * (1 + CurrentMovementSpeedItems * 0.4f);
+	}
+}
+
+void AShooterSamCharacter::UpdateFireRate()
+{
+	if (ItemManager && ItemManager->GetItemsMap()[EItemType::FireRate] != CurrentFireRateItems)
+	{
+		CurrentFireRateItems = ItemManager->GetItemsMap()[EItemType::FireRate];
+
+		ShotIntervalSeconds = BaseShotIntervalSeconds * FMath::Pow( 0.9f, CurrentFireRateItems);
 	}
 }
 
@@ -332,18 +374,6 @@ void AShooterSamCharacter::DestroyCharacter()
 		Gun->Destroy();
 	}
 	Destroy();
-}
-
-void AShooterSamCharacter::UpdateItems()
-{
-	// if (ItemManager)
-	// {
-	// 	TMap<FName, FItem> ItemMap = ItemManager->GetItemsMap();
-	// 	if (ItemMap)
-	// 	{
-	// 		
-	// 	}
-	// }
 }
 
 void AShooterSamCharacter::SpawnItemDrop() const
