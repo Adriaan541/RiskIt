@@ -45,7 +45,7 @@ void AEnemySpawner::EnemyDied()
 
 AShooterAI* AEnemySpawner::SpawnEnemy(AShooterSamCharacter* Player, float EnemyExperience)
 {
-	if (GetNumberOfEnemies() >= 1)
+	if (GetNumberOfEnemies() >= 3)
 	{
 		DestroyEnemy(ShooterAIActors[0]);
 	}
@@ -80,7 +80,10 @@ void AEnemySpawner::DestroyEnemy(AShooterAI* Enemy)
 		if (ShooterAIActors[i] == Enemy)
 		{
 			ShooterAIActors.RemoveAt(i);
-			Enemy->ThisCharacter->DestroyCharacter();
+			if (Enemy->ThisCharacter)
+			{
+				Enemy->ThisCharacter->DestroyCharacter();
+			}
 			return;
 		}
 	}

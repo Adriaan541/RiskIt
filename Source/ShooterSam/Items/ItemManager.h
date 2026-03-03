@@ -7,6 +7,10 @@
 #include "ItemManager.generated.h"
 
 
+enum class EItemType : uint8;
+class AGun;
+class AShooterSamCharacter;
+class ALightningZap;
 class UHUDWidget;
 class UItemBox;
 class AShooterSamPlayerController;
@@ -18,6 +22,8 @@ struct FItem
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EItemType ItemType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName ItemName;
 	UPROPERTY()
 	int32 Amount;
@@ -28,13 +34,70 @@ struct FItem
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UMaterial* ItemMaterial;
 
-	FItem()
+	FItem(): ItemType()
 	{
 		ItemName = FName(NAME_None);
 		Amount = 0;
 		Icon = nullptr;
 		ItemBox = nullptr;
 		ItemMaterial = nullptr;
+	}
+};
+
+USTRUCT(BluePrintType)
+struct FProcChainData
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	AGun* Instigator;
+	UPROPERTY()
+	AShooterSamCharacter* OwnerShooterSamCharacter;
+	UPROPERTY()
+	TArray<AShooterSamCharacter*> HitCharacters;
+	UPROPERTY()
+	float BaseDamage;
+
+	FProcChainData()
+	{
+		Instigator = nullptr;
+		OwnerShooterSamCharacter = nullptr;
+		BaseDamage = 0;
+	}
+
+	FProcChainData(AGun* SetInstigator, AShooterSamCharacter* SetOwnerShooterSamCharacter,
+								  AShooterSamCharacter* HitActor, float SetBaseDamage)
+	{
+		Instigator = SetInstigator;
+		OwnerShooterSamCharacter = SetOwnerShooterSamCharacter;
+		HitCharacters.Add(HitActor);
+		BaseDamage = SetBaseDamage;
+	}
+
+	AShooterSamCharacter* GetHitActor()
+	{
+		return HitCharacters.Last();
+	}
+
+	AShooterSamCharacter* GetPreviousHit()
+	{
+		if (HitCharacters.Num() > 1)
+		{
+			return HitCharacters[HitCharacters.Num() - 2];
+		}
+		return nullptr;
+	}
+
+	bool IsChain() const
+	{
+		if (HitCharacters.Num() > 1) return true;
+		return false;
+	}
+
+	bool IsNull()
+	{
+		if (Instigator == nullptr || OwnerShooterSamCharacter == nullptr || HitCharacters.Num() == 0) return true;
+		return false;
 	}
 };
 
@@ -57,34 +120,53 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<UItemBox> ItemWidgetClass;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<ALightningZap> LightningZapClass;
+
 	TArray<UUserWidget*> ItemWidgets;
+
+	TMap<EItemType, int> ItemMap;
 
 	FName WidgetNameFromItemName(FName ItemName);
 
-	void UpdateItemBar();
-	
+	void UpdateItems();
+
 	void CreateItemBoxWidget(FItem& Item);
-	
+
 	void UpdateItemBoxWidget(FItem& Item);
+
+	void UpdateItemMap();
 
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override;
+							   FActorComponentTickFunction* ThisTickFunction) override;
+
 	UPROPERTY(EditAnywhere)
 	TArray<FItem> Items;
 
 	TArray<FItem> GetItems();
+	
+	FItem* GetItem(EItemType ItemType);
+
+	TMap<EItemType, int> GetItemsMap();
 
 	FItem GetRandomItem();
 
-	void Init(UHUDWidget* HUDWidgetReference) ;
-	
+	void Init(UHUDWidget* HUDWidgetReference);
+
 	void CreateWidgets();
 
-	void AddItem(FName ItemName);
-	void DeductItem(FString ItemName);
+	void AddItem(EItemType ItemType);
+	void DeductItem(EItemType ItemType);
 
-	void SetItem(FString ItemName, int32 Amount);
-	void RemoveItem(FString ItemName);
+	void SetItem(EItemType ItemType, int32 Amount);
+	void RemoveItem(EItemType ItemType);
+
+	// void OnHitProcChain(AGun* Instigator, AShooterSamCharacter* OwnerShooterSamCharacter,
+	//                     AShooterSamCharacter* HitActor, float BaseDamage, AShooterSamCharacter* PreviousHit);
+	void OnHitProcChain(FProcChainData* ProcChainData);
+	void ExecuteLightningZap(FProcChainData ProcChainData, int AmountOfItem);
+
+	void ExecuteLightningZap(FProcChainData ProcChainData);
 };

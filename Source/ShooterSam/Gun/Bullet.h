@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ShooterSamCharacter.h"
 #include "GameFramework/Actor.h"
 #include "Bullet.generated.h"
 

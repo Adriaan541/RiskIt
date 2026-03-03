@@ -7,6 +7,8 @@
 #include "GameFramework/Actor.h"
 #include "itemDrop.generated.h"
 
+enum class EItemType : uint8;
+
 UCLASS()
 class SHOOTERSAM_API AItemDrop : public AActor
 {
@@ -24,7 +26,7 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* IconMesh;
 
-	FName ItemName;
+	EItemType ItemType;
 
 	UMaterial* DropMaterial;
 

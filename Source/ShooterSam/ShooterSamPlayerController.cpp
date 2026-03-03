@@ -8,6 +8,7 @@
 #include "Blueprint/UserWidget.h"
 #include "ShooterSam.h"
 #include "ShooterSamCharacter.h"
+#include "Items/ItemManager.h"
 #include "Widgets/Input/SVirtualJoystick.h"
 
 void AShooterSamPlayerController::BeginPlay()

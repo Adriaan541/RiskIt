@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Gun.h"
 #include "Items/ItemManager.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "ShooterSamCharacter.generated.h"
 
+class AGun;
 class UWidgetComponent;
 class UEnemyHealthBar;
 class AShooterSamGameMode;
@@ -100,6 +100,8 @@ public:
 
 	void SetMaxHealth();
 
+	void CheckDamageItemUpdate();
+
 	void SetDamage();
 
 	void SetExperience(float ExperienceAmount);
@@ -131,17 +133,30 @@ public:
 	AGun* Gun;
 
 	UPROPERTY(EditAnywhere)
-	float ShotIntervalSeconds = 0.5f;
+	float BaseShotIntervalSeconds = 0.5f;
 
 protected:
-	float TimeSinceLastShot;
-
 	UWidgetComponent* EnemyHealthBarWidgetComponent;
 
 	float TimeSinceEnemyHealthBarVisible = 0.0f;
 
-public:
+	int CurrentDamageItems = 0;
+
+	UPROPERTY(EditAnywhere)
+	float BaseHealthRegeneration = 2.0f;
+	float HealthRegenTimer;
+	void RegenHealth(float DeltaTime);
+
+	int CurrentMovementSpeedItems = 0;
+	float BaseMovementSpeed;
+	void UpdateMovementSpeed();
+
+	float ShotIntervalSeconds;
+	int32 CurrentFireRateItems = 0;
+	float TimeSinceLastShot;
+	void UpdateFireRate();
 	
+public:
 	UPROPERTY(EditAnywhere)
 	UItemManager* ItemManager;
 
