@@ -80,7 +80,10 @@ void AEnemySpawner::DestroyEnemy(AShooterAI* Enemy)
 		if (ShooterAIActors[i] == Enemy)
 		{
 			ShooterAIActors.RemoveAt(i);
-			Enemy->ThisCharacter->DestroyCharacter();
+			if (Enemy->ThisCharacter)
+			{
+				Enemy->ThisCharacter->DestroyCharacter();
+			}
 			return;
 		}
 	}

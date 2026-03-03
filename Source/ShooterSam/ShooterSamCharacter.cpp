@@ -59,7 +59,7 @@ AShooterSamCharacter::AShooterSamCharacter()
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
 	ItemManager = CreateDefaultSubobject<UItemManager>(TEXT("ItemManager"));
-	
+
 	EnemyHealthBarLocation = CreateDefaultSubobject<USceneComponent>(TEXT("EnemyHealthBarLocation"));
 	EnemyHealthBarLocation->SetupAttachment(RootComponent);
 
@@ -84,7 +84,8 @@ void AShooterSamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AShooterSamCharacter::Look);
 
-		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this, &AShooterSamCharacter::AutoShoot);
+		EnhancedInputComponent->BindAction(ShootAction, ETriggerEvent::Triggered, this,
+		                                   &AShooterSamCharacter::AutoShoot);
 	}
 	else
 	{
@@ -94,7 +95,6 @@ void AShooterSamCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 		       ), *GetNameSafe(this));
 	}
 }
-
 
 
 void AShooterSamCharacter::BeginPlay()
@@ -122,9 +122,9 @@ void AShooterSamCharacter::BeginPlay()
 	SetExperience(CurrentExperience);
 
 	SetEnemyHealthBar();
-	
+
 	Health = MaxHealth;
-	
+
 	UpdateHudHealth();
 }
 
@@ -150,7 +150,7 @@ void AShooterSamCharacter::Tick(float DeltaTime)
 	UpdateFireRate();
 
 	CheckDamageItemUpdate();
-	
+
 	RegenHealth(DeltaTime);
 }
 
@@ -274,7 +274,7 @@ void AShooterSamCharacter::SetDamage()
 		// Every Damage item (Ammo icon) adds 40% damage
 		int AmountOfDamageItem = ItemManager->GetItemsMap()[EItemType::Damage];
 		float DamageItemsModifier = 1 + (0.4 * AmountOfDamageItem);
-		
+
 		Gun->BulletDamage = Gun->BaseBulletDamage * FMath::Pow(1.2f, Level - 1) * DamageItemsModifier;
 	}
 }
@@ -285,11 +285,13 @@ void AShooterSamCharacter::SetExperience(float ExperienceAmount)
 	{
 		float ExperienceNeededForCalculatedLevel;
 		float MaxExperienceCurrentLevel;
-		int32 NewLevel = GameMode->GetLevelInfoFromExperience(ExperienceAmount, ExperienceNeededForCalculatedLevel, MaxExperienceCurrentLevel);
+		int32 NewLevel = GameMode->GetLevelInfoFromExperience(ExperienceAmount, ExperienceNeededForCalculatedLevel,
+		                                                      MaxExperienceCurrentLevel);
 		SetLevel(NewLevel);
 		if (PlayerController)
 		{
-			PlayerController->HUDWidget->SetExperienceBar(Level, ExperienceAmount - ExperienceNeededForCalculatedLevel, MaxExperienceCurrentLevel);
+			PlayerController->HUDWidget->SetExperienceBar(Level, ExperienceAmount - ExperienceNeededForCalculatedLevel,
+			                                              MaxExperienceCurrentLevel);
 		}
 	}
 }
@@ -324,7 +326,7 @@ void AShooterSamCharacter::UpdateMovementSpeed()
 	if (ItemManager && ItemManager->GetItemsMap()[EItemType::MovementSpeed] != CurrentMovementSpeedItems)
 	{
 		CurrentMovementSpeedItems = ItemManager->GetItemsMap()[EItemType::MovementSpeed];
-		
+
 		GetCharacterMovement()->MaxWalkSpeed = BaseMovementSpeed * (1 + CurrentMovementSpeedItems * 0.4f);
 	}
 }
@@ -335,7 +337,7 @@ void AShooterSamCharacter::UpdateFireRate()
 	{
 		CurrentFireRateItems = ItemManager->GetItemsMap()[EItemType::FireRate];
 
-		ShotIntervalSeconds = BaseShotIntervalSeconds * FMath::Pow( 0.9f, CurrentFireRateItems);
+		ShotIntervalSeconds = BaseShotIntervalSeconds * FMath::Pow(0.9f, CurrentFireRateItems);
 	}
 }
 
@@ -373,7 +375,10 @@ void AShooterSamCharacter::DestroyCharacter()
 	{
 		Gun->Destroy();
 	}
-	Destroy();
+	if (this)
+	{
+		Destroy();
+	}
 }
 
 void AShooterSamCharacter::SpawnItemDrop() const
@@ -416,7 +421,7 @@ void AShooterSamCharacter::OnDamageTaken(AActor* DamagedActor, float Damage, con
 		{
 			GameMode->CharacterDied(this);
 		}
-		
+
 		SetActorEnableCollision(false);
 		Gun->SetActorEnableCollision(false);
 
